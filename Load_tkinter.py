@@ -10,9 +10,9 @@ def Load():
                                           ("all files", "*.*")))
     print(filename)
 
-    filePath = filename.split('/')
-    print(filePath)
-
+    # filePath = filename.split('/')
+    #print(filePath)
+    
     if os.path.isfile(filename):
         cap = cv2.VideoCapture(filename)
     else:
@@ -25,20 +25,20 @@ def Load():
 
     frameRate = 33
 
-    while True:
-        ret, frame = cap.read()
-        if not(ret):
-            break
+    #while True:
+        #ret, frame = cap.read()
+        #if not(ret):
+            #break
 
-        cv2.imshow('freme', frame)
-        key = cv2.waitKey(frameRate)
+        #cv2.imshow('freme', frame)
+        #key = cv2.waitKey(frameRate)
 
-        if key == 27:
-            break
+       # if key == 27:
+            #break
 
-    if cap.isOpened():
-        cap.release()
-    cv2.destroyAllWindows()
+    #if cap.isOpened():
+       # cap.release()
+    #cv2.destroyAllWindows()
     
 
 def Save():
@@ -52,6 +52,9 @@ def domenu():
 
 root = Tk()
 root.title("face_protector")
+root.geometry("640x480")
+root.resizable(True, True)
+
 menubar = Menu(root)
 filemenu = Menu(menubar, tearoff=0)
 menubar.add_cascade(label="File", menu=filemenu)
