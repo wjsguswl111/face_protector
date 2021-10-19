@@ -6,7 +6,7 @@ from tkinter import filedialog
 
 def Load():
     filename = filedialog.askopenfilename(initialdir="/", title="Select file",
-                                          filetypes=(("MP4 files", "*.mp4"),
+                                          filetypes=(("MP4 files", "*.mp4"),("AVI files","*.avi"),
                                           ("all files", "*.*")))
     print(filename)
 
