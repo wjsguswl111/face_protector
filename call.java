@@ -18,10 +18,10 @@ public class call {
         String url = "https://api.imgbb.com/1/upload"; 	//URL
         String key = "d1f984f4881d4a7ff17f4f04f42aa4bf";
 
-        /*byte[] binary = getFileBinary("C:/chosun.jfif");
+        byte[] binary = getFileBinary("C:/chosun.jfif");
         String base64data = Base64.getEncoder().encodeToString(binary);
-*/
 
+/*
         String strBase64 = "";
         File f = new File("C:/chosun.jfif");
         if (f.exists() && f.isFile() && f.length() > 0){
@@ -46,9 +46,9 @@ public class call {
                 } catch (Exception e) {
             }
         }
-        
+        */
 
-        String resp = postRequest(url, key, strBase64);
+        String resp = postRequest(url, key, base64data);
 
         System.out.println(resp);
     }
@@ -96,7 +96,7 @@ public class call {
         return myResult;
     }
 
-    /*public static byte[] getFileBinary(String filepath) throws IOException{
+    public static byte[] getFileBinary(String filepath) throws IOException{
         File file = new File(filepath);
         byte[] data = new byte[(int) file.length()];
         try (FileInputStream stream = new FileInputStream(file)) {
@@ -105,6 +105,6 @@ public class call {
         e.printStackTrace();
         }
         return data;
-    }*/
+    }
 
 }
