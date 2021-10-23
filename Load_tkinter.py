@@ -8,10 +8,10 @@ def Load():
     filename = filedialog.askopenfilename(initialdir="/", title="Select file",
                                           filetypes=(("MP4 files", "*.mp4"),("AVI files","*.avi"),
                                           ("all files", "*.*")))
-    print(filename)
+    print(filename) # 파일 경로 + 파일명 + 확장자
 
     # filePath = filename.split('/')
-    #print(filePath)
+    # print(filePath)
     
     if os.path.isfile(filename):
         cap = cv2.VideoCapture(filename)
@@ -25,7 +25,7 @@ def Load():
 
     frameRate = 33
 
-    #while True:
+    #while True: # 동영상 재생
         #ret, frame = cap.read()
         #if not(ret):
             #break
@@ -40,6 +40,7 @@ def Load():
        # cap.release()
     #cv2.destroyAllWindows()
     
+# 메뉴바 구현
 
 def Save():
     filename = filedialog.asksaveasfilename(initialdir="/", title="Select file",
