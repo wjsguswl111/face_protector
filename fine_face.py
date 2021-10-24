@@ -11,6 +11,10 @@ cam = cv2.VideoCapture("see.mp4")
 
 while True:
     img, frame = cam.read()
+
+    if type(frame) == type(None):
+        break
+
     frame = imutils.resize(frame, width=600)
     (h, w) = frame.shape[:2]
 
@@ -27,6 +31,7 @@ while True:
             (startX, startY, endX, endY) = box.astype("int")
 
             face = frame[startY:endY, startX:endX]
+            face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
             (fH, fW) = face.shape[:2]
 
             if fW < 20 or fH < 20 :
