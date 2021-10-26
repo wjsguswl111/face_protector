@@ -1,7 +1,6 @@
 import java.io.File;
 import java.io.FileInputStream;
 import java.util.Base64;
-import java.util.Base64.Encoder;
 import java.io.BufferedReader;
 
 import java.io.IOException;
@@ -15,45 +14,18 @@ import java.net.URL;
 
 public class call {
     public static void main(String[] args) throws IOException{
-        String url = "https://api.imgbb.com/1/upload"; 	//URL
+        String url = "https://api.imgbb.com/1/upload";
         String key = "d1f984f4881d4a7ff17f4f04f42aa4bf";
 
         byte[] binary = getFileBinary("C:/chosun.jfif");
         String base64data = Base64.getEncoder().encodeToString(binary);
-
-/*
-        String strBase64 = "";
-        File f = new File("C:/chosun.jfif");
-        if (f.exists() && f.isFile() && f.length() > 0){
-            byte[] bt = new byte[(int) f.length()];
-            FileInputStream fis = null;
-            try {
-                fis = new FileInputStream(f);
-                fis.read(bt);
-                strBase64 = new String(Base64.encodeBase64(bt));
-    
-               
-    
-            } catch (Exception e) {
-                throw e;
-               
-            } finally {
-                try {
-                    if (fis != null) {
-                        fis.close();
-                    }
-                } catch (IOException e) {
-                } catch (Exception e) {
-            }
-        }
-        */
-
-        String resp = postRequest(url, key, base64data);
+        String name = "chosun";
+        String resp = postRequest(url, key, base64data, name);
 
         System.out.println(resp);
     }
 
-    public static String postRequest(String pURL, String pkey, String img){
+    public static String postRequest(String pURL, String pkey, String img, String name){
         String myResult = "";
 
         try { 
@@ -70,7 +42,7 @@ public class call {
 
             StringBuffer buffer = new StringBuffer();
 
-            buffer.append("key=").append(pkey).append(" & image=").append(img);
+            buffer.append("key=").append(pkey).append(" & image=").append(img).append(" & name=").append(name);
 
             OutputStreamWriter outStream = new OutputStreamWriter(http.getOutputStream(), "UTF-8");
             PrintWriter writer = new PrintWriter(outStream);
