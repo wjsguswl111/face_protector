@@ -1,18 +1,18 @@
 import os
 import cv2
+import imutils
 
-path=os.path.join('video','C:/Users/wjsgu/Desktop/test.avi')
-
+cap = cv2.VideoCapture('C:/Users/wjsgu/Desktop/test.avi')
 hog=cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
-cap = cv2.VideoCapture(path)
 while True:
     ret, frame = cap.read()
 
     if not ret:
         break
-
+    
+    #frame = imutils.resize(frame, width=800, height=800)
     detected, _=hog.detectMultiScale(frame)
 
     for(x, y, w, h) in detected:
