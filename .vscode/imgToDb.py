@@ -10,7 +10,7 @@ connection = pymysql.connect(
                 password = 'a5214645'
             )
 
-img = Image.open("C:\choun1.jpg")
+img = Image.open("C:\chosun.jpg")
 img_size = str(img.size)
 
 numpy_img = np.array(img)
@@ -22,7 +22,7 @@ for x in range(len(characters)):
 
 try:
     cursor = connection.cursor()
-    cursor.execute("INSERT INTO members (name, img, size) VALUES (%s, %s, %s)",("chosun1", str_img, img_size))
+    cursor.execute("INSERT INTO members (name, img, size) VALUES (%s, %s, %s)",("chosun", str_img, img_size))
 
 finally:
     connection.commit()
