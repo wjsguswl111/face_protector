@@ -1,10 +1,9 @@
-#import os
 import cv2
-#import imutils
+import os
+import cvlib as cv
+from cvlib.object_detection import draw_bbox
 
 cap = cv2.VideoCapture('C:/Users/wjsgu/Desktop/test.avi')
-hog=cv2.HOGDescriptor()
-hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
 while True:
     ret, frame = cap.read()
@@ -13,12 +12,13 @@ while True:
         break
     
     #frame = imutils.resize(frame, width=800, height=800)
-    detected, _=hog.detectMultiScale(frame)
+    bbox, label, conf = cv.detect_common_objects(cap)
 
-    for(x, y, w, h) in detected:
-        cv2.rectangle(frame, (x, y, w, h), (0, 255, 0), 3)
+    print(bbox, label, conf)
+    cap = draw_bbox(cap, bbox, label, conf)
 
     cv2.imshow("Detect", frame)
     if cv2.waitKey(10) == 27:
         break
+
 cv2.destroyAllWindows()
