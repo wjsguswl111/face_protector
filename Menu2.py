@@ -24,20 +24,39 @@ def Load():
                                           filetypes=(("MP4 files", "*.mp4"),("AVI files","*.avi"),
                                           ("all files", "*.*")))
     print(filename) # 파일 경로 + 파일명 + 확장자
+    cap = cv2.VideoCapture(filename)
 
-    cap = cv2.VideoCapture(filename) 
-
-    '''def video_stream():
+    while True: # 동영상 재생
         _, frame = cap.read()
-        cv2video = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
-        img = Image.fromarray(cv2video)
+        if not(_):
+            break
+
+        cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+        img = Image.fromarray(cv2image)
         imgtk = ImageTk.PhotoImage(image=img)
         label1.imgtk = imgtk
         label1.configure(image=imgtk)
-        label1.after(1, video_stream)'''
-    
-# 메뉴바 구현
+        label1.after(1,Load)
 
+        '''def video_stream():
+            _, frame = cap.read()
+            cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
+            img = Image.fromarray(cv2image)
+            imgtk = ImageTk.PhotoImage(image=img)
+            label1.imgtk = imgtk
+            label1.configure(image=imgtk)
+            label1.after(1, video_stream) 
+
+        video_stream()'''
+
+        if cv2.waitKey(10) == 27:
+            break
+
+    if cap.isOpened():
+        cap.release()
+    cv2.destroyAllWindows()
+
+# 메뉴바 구현
 
 def Save():
     filename = filedialog.asksaveasfilename(initialdir="/", title="Select file",
