@@ -1,6 +1,6 @@
 import pymysql
 
-def create(tableName):
+def delete(tableName):
 
     connection = pymysql.connect(
                     host = '127.0.0.1',
@@ -11,7 +11,7 @@ def create(tableName):
 
     try:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE "+ tableName +" (name VARCHAR(255), img MEDIUMTEXT, size VARCHAR(255))")
+        cursor.execute("DROP TABLE IF EXISTS " + tableName)
 
     finally:
         connection.commit()
