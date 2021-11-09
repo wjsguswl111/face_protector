@@ -27,8 +27,8 @@ def Load():
     cap = cv2.VideoCapture(filename)
 
     while True: # 동영상 재생
-        _, frame = cap.read()
-        if not(_):
+        ret, _, frame = cap.read()
+        if not(ret):
             break
 
         cv2image = cv2.cvtColor(frame, cv2.COLOR_BGR2RGBA)
@@ -36,7 +36,7 @@ def Load():
         imgtk = ImageTk.PhotoImage(image=img)
         label1.imgtk = imgtk
         label1.configure(image=imgtk)
-        label1.after(1,Load)
+        
 
         '''def video_stream():
             _, frame = cap.read()

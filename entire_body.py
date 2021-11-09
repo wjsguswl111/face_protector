@@ -19,6 +19,7 @@ while True:
         cv2.rectangle(frame, (x, y, w, h), (0, 255, 0), 3)
 
     cv2.imshow("Detect", frame)
+    
     if cv2.waitKey(10) == 27:
         break
 cv2.destroyAllWindows()

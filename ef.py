@@ -41,8 +41,8 @@ while True:
         cv2.putText(frame, 'Detected human', (x-5, y-5), font, 0.9, (255,255,0),2)'''
 
 
-    #for(x, y, w, h) in detected:
-        #cv2.rectangle(frame, (x, y, w, h), (0, 255, 0), 3)
+    '''for(x, y, w, h) in detected:
+        cv2.rectangle(frame, (x, y, w, h), (0, 255, 0), 3)'''
 
     cv2.imshow("Detect", frame)
     if cv2.waitKey(10) == 27:
