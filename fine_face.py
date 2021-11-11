@@ -1,6 +1,7 @@
 import numpy as np
 import cv2
 import imutils
+from reDB import imgDB
 
 protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
