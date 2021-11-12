@@ -16,7 +16,11 @@ while True:
     detected, _=hog.detectMultiScale(frame)
 
     for(x, y, w, h) in detected:
-        cv2.rectangle(frame, (x, y, w, h), (0, 255, 0), 3)
+        #cv2.rectangle(frame, (x, y, w, h), (0, 255, 0), 3)
+        body_img=frame[y:y+h,x:x+w]
+        body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
+        body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
+        frame[y:y+h,x:x+w] = body_img
 
     cv2.imshow("Detect", frame)
     
