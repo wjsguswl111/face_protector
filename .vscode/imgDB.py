@@ -13,7 +13,7 @@ connection = pymysql.connect(
 def creTable(tableName):
     try:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE "+ tableName +" (name VARCHAR(255), img MEDIUMTEXT, size VARCHAR(255))")
+        cursor.execute("CREATE TABLE "+ tableName +" (img MEDIUMTEXT, size VARCHAR(255))")
 
     finally:
         connection.commit()
@@ -30,11 +30,10 @@ def delTable(tableName):
 
 def imgToDB(tableName, image):
     #이미지 인수 넘겨 받으려면 수정 필요
-    img = Image.open("C:\choun1.jpg")
-    img_size = str(img.size)
+    #img = Image.open("C:\choun1.jpg")
+    img_size = image.shape
 
-    numpy_img = np.array(img)
-    list_img = numpy_img.tolist()
+    list_img = image.tolist()
     str_img = str(list_img)
     characters = "[],"
     for x in range(len(characters)):
@@ -51,25 +50,27 @@ def imgToDB(tableName, image):
 def imgFromDB(tableName):
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT name, img, size FROM " + tableName)
+        cursor.execute("SELECT img, size FROM " + tableName)
         res = cursor.fetchall()
-
+        
+        i=0;
+        
         for x in res:
-            name = x[0]
-            img = x[1]
-            size = x[2]
-
+            img = x[0]
+            size = x[1]
+            i = i+1
+            
             characters = "(),"
-            for x in range(len(characters)):
-                size = size.replace(characters[x],"")
+            for c in range(len(characters)):
+                size = size.replace(characters[c],"")
             size = size.split()
             size = list(map(int, size))
         
-            name = name + ".jpeg"
+            name = str(i) + ".jpeg"
         
             img2 = img.split()
             img2 = list(map(int, img2))
-            img2 = np.array(img2).reshape((int(size[1]),int(size[0]),3))
+            img2 = np.array(img2).reshape((int(size[0]),int(size[1]),int(size[2])))
             imageio.imwrite(name, img2)
 
     finally:
