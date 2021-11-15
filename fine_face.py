@@ -2,7 +2,8 @@ import numpy as np
 import cv2
 import imutils
 from PIL import ImageGrab, Image
-#from reDB import imgDB
+import imgDB
+import deleteFile
 
 protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
@@ -38,10 +39,12 @@ while True:
             if fW < 20 or fH < 20 :
                 continue
 
-            faceBlob = cv2.dnn.blobFromImage(face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB = True, crop = False)
+            #faceBlob = cv2.dnn.blobFromImage(face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB = True, crop = False)
 
             y = startY - 10 if startY - 10 > 10 else startY + 10
             cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
+
+            
 
     cv2.imshow('Face',frame)
     if cv2.waitKey(1)==27:

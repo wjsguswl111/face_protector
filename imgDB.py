@@ -53,7 +53,7 @@ def imgFromDB(tableName):
         cursor.execute("SELECT img, size FROM " + tableName)
         res = cursor.fetchall()
         
-        i=0;
+        i=0
         
         for x in res:
             img = x[0]
