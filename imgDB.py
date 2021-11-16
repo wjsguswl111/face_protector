@@ -32,10 +32,10 @@ def saveResult(mem, re):
         connection.close()
 
 #갑 불러오기(이름)
-def callResult(mem): 
+def callResult(): 
     try:
         cursor = connection.cursor()
-        cursor.execute("SELECT result FROM members WHERE memName = %s",(mem))
+        cursor.execute("SELECT res FROM members")
 
     finally:
         connection.commit()

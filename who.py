@@ -1,24 +1,28 @@
-#import fine_face as ff
+import numpy as np
+import cv2
 import imutils
+from PIL import ImageGrab, Image
+from pymysql import connect
 import imgDB
 import deleteFile
-import cv2
+import fine_face as ff
 
-protoPath = "deploy.prototxt"
-modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
-detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
+def who_are():
+    #얼굴 검출
+            roi = ff.frame[ff.startY:ff.endY, ff.startX:ff.endX]
+            roi = cv2.resize(roi, (200, 200))
+            ro = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+            result = ff.model.predict(roi)
 
-face = cv2.imread('test.jpg')
-frame = imutils.resize(face, width=600)
-
-#blob = cv2.dnn.blobFromImage(cv2.resize(frame, (300, 300)), 1.0, (300, 300), (104.0, 177.0, 123.0))
-
-cr = frame[200:400, 100:300]
-print(type(cr))
-cv2.imshow("cropped", cr)
-cv2.waitKey(0)
-#print(type(cr))
-#imgDB.creTable("person")
-#imgDB.imgToDB("person", blob)
-
-#imgDB.imgFromDB("person")
+            while(True):
+                ff.cur.execute("SELECT * FROM members")
+                ff.row = ff.cur.fetchone()
+                if ff.row==None:
+                    break
+                if(result == ff.row[1]):
+                    imgDB.imgToDB(ff.row[0], roi)
+                else:
+                    ff.name+=1
+                    imgDB.creTable(str(ff.name))
+                    imgDB.imgToDB(str(ff.name), roi)
+                    imgDB.imgFromDB(str(ff.name))
