@@ -10,6 +10,37 @@ connection = pymysql.connect(
                     password = 'a5214645'
             )
 
+
+#값 저장하는 테이블 생성 함수
+def creTable2():
+    try:
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE members (memName VARCHAR(255), result DOUBLE)")
+
+    finally:
+        connection.commit()
+        connection.close()
+
+#값 저장하기 (이름, 값)
+def saveResult(mem, re):
+    try:
+        cursor = connection.cursor()
+        cursor.execute("INSERT INTO members (memName, result) VALUES (%s, %f)",(mem, re))
+
+    finally:
+        connection.commit()
+        connection.close()
+
+#갑 불러오기(이름)
+def callResult(mem): 
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT result FROM members WHERE memName = %s",(mem))
+
+    finally:
+        connection.commit()
+        connection.close()
+
 def creTable(tableName):
     try:
         cursor = connection.cursor()
@@ -41,7 +72,7 @@ def imgToDB(tableName, image):
 
     try:
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO "+tableName+" (name, img, size) VALUES (%s, %s, %s)",("chosun1", str_img, img_size)) #이미지이름도 변경필요, 없애던가
+        cursor.execute("INSERT INTO "+tableName+" (name, img, size) VALUES (%s, %s, %s)",("chosun1", str_img, img_size))
 
     finally:
         connection.commit()
