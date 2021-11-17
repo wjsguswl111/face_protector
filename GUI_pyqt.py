@@ -1,4 +1,4 @@
-from PyQt5.QtWidgets import QApplication, QWidget, QFileDialog
+from PyQt5.QtWidgets import QApplication,QMainWindow, QFileDialog
 from PyQt5.QtCore import Qt, QUrl
 from PyQt5.QtGui import QPalette
 from PyQt5.uic import loadUi
@@ -8,7 +8,7 @@ import datetime
  
 QApplication.setAttribute(Qt.AA_EnableHighDpiScaling, True)
  
-class CWidget(QWidget):
+class CWidget(QMainWindow):
     def __init__(self):
         super().__init__()
         loadUi('main_ui.ui', self)
