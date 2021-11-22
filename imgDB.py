@@ -15,7 +15,7 @@ connection = pymysql.connect(
 def creTable2():
     try:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE members (memName VARCHAR(255), result DOUBLE)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS members (memName VARCHAR(255), result DOUBLE)")
 
     finally:
         connection.commit()
@@ -71,8 +71,8 @@ def delTable(tableName):
 def imgToDB(tableName, image):
     #이미지 인수 넘겨 받으려면 수정 필요
     #img = Image.open("C:\choun1.jpg")
+    
     img_size = image.shape
-
     list_img = image.tolist()
     str_img = str(list_img)
     characters = "[],"
@@ -81,7 +81,9 @@ def imgToDB(tableName, image):
 
     try:
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO "+tableName+" (name, img, size) VALUES (%s, %s, %s)",("chosun1", str_img, img_size))
+        sql = "INSERT INTO "+tableName+" (img, size) VALUES (%s, %s)"
+        val = (str_img, str(img_size))
+        cursor.execute(sql,val)
 
     finally:
         connection.commit()
@@ -106,12 +108,13 @@ def imgFromDB(tableName):
             size = size.split()
             size = list(map(int, size))
         
-            name = str(i) + ".jpeg"
+            name = "image\\" + str(i) + ".jpeg"
         
             img2 = img.split()
             img2 = list(map(int, img2))
             img2 = np.array(img2).reshape((int(size[0]),int(size[1]),int(size[2])))
             imageio.imwrite(name, img2)
+
 
     finally:
         connection.close()
