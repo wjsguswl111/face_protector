@@ -1,39 +1,23 @@
-from azure.cognitiveservices.vision.computervision import ComputerVisionClient
-from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
-from msrest.authentication import CognitiveServicesCredentials
-
-credential = CognitiveServicesCredentials(cog_key) 
-cv_client = ComputerVisionClient(cog_endpoint, credential)
+import sys
+from PyQt5.QtWidgets import QApplication, QLabel, QWidget, QCheckBox
+from PyQt5.QtCore import Qt
+from PyQt5.QtGui import QPixmap
 
 
-features = [VisualFeatureTypes.description,
-            VisualFeatureTypes.tags,
-            VisualFeatureTypes.categories,
-            VisualFeatureTypes.brands,
-            VisualFeatureTypes.objects,
-            VisualFeatureTypes.adult]
+class MyApp(QWidget):
 
+    def __init__(self):
+        super().__init__()
+        self.initUI()
 
-# Get image analysis
-with open(image_file, mode="rb") as image_data:
-    analysis = cv_client.analyze_image_in_stream(image_data , features)
+    def initUI(self):
+        pixmap = QPixmap('choun1')
+        lb1_img = QLabel()
+        lb1_img.setPixmap(pixmap)
+        lb1_size = QLabel('Width: '+str(pixmap.width())+', Height: '+str(pixmap.height()))
+        lb
 
-# Get image description
-for caption in analysis.description.captions:
-    print("Description: '{}' (confidence: {:.2f}%)".format(caption.text, caption.confidence * 100))
-
-# Get image tags
-
-
-# Get image categories 
-
-
-# Get brands in the image
-
-
-# Get objects in the image
-
-
-# Get moderation ratings
-
-
+if __name__ == '__main__':
+    app = QApplication(sys.argv)
+    ex = MyApp()
+    sys.exit(app.exec_())
