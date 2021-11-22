@@ -1,12 +1,21 @@
 import numpy as np
 import cv2
 import imutils
+from PIL import ImageGrab, Image
+from pymysql import connect
+import imgDB
+import deleteFile
+import who
 
 protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-cam = cv2.VideoCapture("see.mp4")
+name = 0
+
+cam = cv2.VideoCapture("videos.mp4")
+
+imgDB.creTable2()
 
 while True:
     img, frame = cam.read()
@@ -36,10 +45,12 @@ while True:
             if fW < 20 or fH < 20 :
                 continue
 
-            faceBlob = cv2.dnn.blobFromImage(face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB = True, crop = False)
+            #faceBlob = cv2.dnn.blobFromImage(face, 1.0 / 255, (96, 96), (0, 0, 0), swapRB = True, crop = False)
 
             y = startY - 10 if startY - 10 > 10 else startY + 10
             cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
+            
+            who.who_are(frame, startX, startY, endX, endY)
 
     cv2.imshow('Face',frame)
     if cv2.waitKey(1)==27:

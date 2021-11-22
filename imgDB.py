@@ -38,13 +38,15 @@ def callResult():
         cursor.execute("SELECT * FROM members")
         res = cursor.fetchall()
 
-        mem = list()
-        re = list()
+        #mem = list()
+        #re = list()
+        val = {}
         for x in res:
-            mem.append(x[0])
-            re.append(x[1])
+            #mem.append(x[0])
+            #re.append(x[1])
+            val[x[0]] = x[1]
             
-        return mem, re
+        return val
 
     finally:
         connection.commit()
@@ -95,7 +97,7 @@ def imgFromDB(tableName):
         cursor.execute("SELECT img, size FROM " + tableName)
         res = cursor.fetchall()
         
-        i=0;
+        i=0
         
         for x in res:
             img = x[0]
