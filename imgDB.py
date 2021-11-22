@@ -3,19 +3,18 @@ from PIL import Image
 import numpy as np
 import imageio
 
-connection = pymysql.connect(
+
+#값 저장하는 테이블 생성 함수
+def creTable2():
+    connection = pymysql.connect(
                     host = '127.0.0.1',
                     database = 'chosun',
                     user = 'root',
                     password = 'a5214645'
             )
-
-
-#값 저장하는 테이블 생성 함수
-def creTable2():
     try:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS members (memName VARCHAR(255), result DOUBLE)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS members (memName VARCHAR(255), result INT)")
 
     finally:
         connection.commit()
@@ -23,34 +22,53 @@ def creTable2():
 
 #값 저장하기 (이름, 값)
 def saveResult(mem, re):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
     try:
         cursor = connection.cursor()
-        cursor.execute("INSERT INTO members (memName, result) VALUES (%s, %f)",(mem, re))
+        sql = "INSERT INTO members (memName, result) VALUES (%s, %s)"
+        re = str(re)
+        val = (mem, re)
+        cursor.execute(sql,val)
 
     finally:
         connection.commit()
         connection.close()
 
 #갑 불러오기(이름)
-def callResult(): 
+def callResult():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
     try:
         cursor = connection.cursor()
         cursor.execute("SELECT * FROM members")
         res = cursor.fetchall()
 
-        mem = list()
-        re = list()
+        mem = {}
         for x in res:
-            mem.append(x[0])
-            re.append(x[1])
+            mem[x[0]] = x[1]
             
-        return mem, re
+        return mem
 
     finally:
         connection.commit()
         connection.close()
 
 def creTable(tableName):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
     try:
         cursor = connection.cursor()
         cursor.execute("CREATE TABLE "+ tableName +" (img MEDIUMTEXT, size VARCHAR(255))")
@@ -60,6 +78,12 @@ def creTable(tableName):
         connection.close()
 
 def delTable(tableName):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
     try:
         cursor = connection.cursor()
         cursor.execute("DROP TABLE IF EXISTS " + tableName)
@@ -71,6 +95,12 @@ def delTable(tableName):
 def imgToDB(tableName, image):
     #이미지 인수 넘겨 받으려면 수정 필요
     #img = Image.open("C:\choun1.jpg")
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
     
     img_size = image.shape
     list_img = image.tolist()
@@ -90,6 +120,12 @@ def imgToDB(tableName, image):
         connection.close()
 
 def imgFromDB(tableName):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
     try:
         cursor = connection.cursor()
         cursor.execute("SELECT img, size FROM " + tableName)
