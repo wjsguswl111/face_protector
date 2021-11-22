@@ -10,15 +10,12 @@ import who
 protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
-model = cv2.face.LBPHFaceRecognizer_create()
 
 name = 0
 
-cam = cv2.VideoCapture("see.mp4")
+cam = cv2.VideoCapture("videos.mp4")
 
 imgDB.creTable2()
-cur = connect.cursor()
-row = None
 
 while True:
     img, frame = cam.read()
@@ -53,10 +50,7 @@ while True:
             y = startY - 10 if startY - 10 > 10 else startY + 10
             cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
             
-            who.who_are()
-    
-
-            
+            who.who_are(frame, startX, startY, endX, endY)
 
     cv2.imshow('Face',frame)
     if cv2.waitKey(1)==27:
