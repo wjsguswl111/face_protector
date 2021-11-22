@@ -8,11 +8,10 @@ import deleteFile
 from os import listdir
 from os.path import isfile, join
 import os
-import fine_face as ff
 import deleteFile
 
 def train():
-    path = os.getcwd() + "\\"
+    path = os.getcwd() + "\image\\"
     onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
     Training_Data, Labels = [], []
     for i, files in enumerate(onlyfiles):
@@ -40,14 +39,14 @@ def who_are(frame, startX, startY, endX, endY):
     roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
     
     models = imgDB.callResult()
-
+    
     for key, model in models.items():
+        if not model:
+            imgDB.creTable(str(imgDB.name))
+            imgDB.imgToDB(str(imgDB.name), frame[startY:endY, startX:endX])
+            imgDB.saveResulte(str(imgDB.name), model)
+            imgDB.name+=1
         result = model.predict(roi)
-        if not models:
-            imgDB.creTable(str(ff.name))
-            imgDB.imgToDB(str(ff.name), frame[startY:endY, startX:endX])
-            imgDB.saveResulte(str(ff.name), model)
-            ff.name+=1
         if min_score>result[1]:
             min_score = result[1]
             min_score_name = key
@@ -61,7 +60,7 @@ def who_are(frame, startX, startY, endX, endY):
         imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
         imgDB.imgFromDB(str(min_score_name))
         train()
-        path = os.getcwd() + "\\"
+        path = os.getcwd() + "\image\\"
         onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
         imgDB.saveResult(str(min_score_name), model)
         for i, files in enumerate(onlyfiles):
@@ -69,7 +68,7 @@ def who_are(frame, startX, startY, endX, endY):
             deleteFile.delImg(onlyfiles[i])
 
     else:
-        imgDB.creTable(str(ff.name))
-        imgDB.imgToDB(str(ff.name), frame[startY:endY, startX:endX])
-        imgDB.saveResulte(str(ff.name), model)
-        ff.name+=1
+        imgDB.creTable(str(imgDB.name))
+        imgDB.imgToDB(str(imgDB.name), frame[startY:endY, startX:endX])
+        imgDB.saveResulte(str(imgDB.name), model)
+        imgDB.name+=1

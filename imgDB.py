@@ -10,7 +10,7 @@ connection = pymysql.connect(
                     password = 'a5214645'
             )
 
-
+name=0
 #값 저장하는 테이블 생성 함수
 def creTable2():
     try:
@@ -38,15 +38,15 @@ def callResult():
         cursor.execute("SELECT * FROM members")
         res = cursor.fetchall()
 
-        #mem = list()
-        #re = list()
-        val = {}
+        mem = list()
+        re = list()
+        #val = {}
         for x in res:
-            #mem.append(x[0])
-            #re.append(x[1])
-            val[x[0]] = x[1]
+            mem.append(x[0])
+            re.append(x[1])
+            #val[x[0]] = x[1]
             
-        return val
+        return mem, re
 
     finally:
         connection.commit()

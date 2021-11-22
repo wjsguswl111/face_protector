@@ -11,8 +11,6 @@ protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-name = 0
-
 cam = cv2.VideoCapture("videos.mp4")
 
 imgDB.creTable2()
