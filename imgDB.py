@@ -35,7 +35,20 @@ def saveResult(mem, re):
 def callResult(): 
     try:
         cursor = connection.cursor()
+<<<<<<< HEAD
         cursor.execute("SELECT res FROM members")
+=======
+        cursor.execute("SELECT * FROM members")
+        res = cursor.fetchall()
+
+        mem = list()
+        re = list()
+        for x in res:
+            mem.append(x[0])
+            re.append(x[1])
+            
+        return mem, re
+>>>>>>> 79288cee5d7b7ee201d2037321b2546aafe76605
 
     finally:
         connection.commit()
