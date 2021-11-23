@@ -44,6 +44,7 @@ def who_are(frame, startX, startY, endX, endY, name):
         imgDB.creTable(("n" + str(name)))
         imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
         imgDB.imgFromDB(("n" + str(name)))
+        print(type(train()))
         print(train())
         imgDB.saveResult(("n" + str(name)), train())
         deleteFile.delImg("1")
