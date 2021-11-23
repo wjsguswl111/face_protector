@@ -3,11 +3,12 @@ import cv2
 import imutils
 from PIL import ImageGrab, Image
 from pymysql import connect
-#import imgDB
-#import deleteFile
-from os import listdir, name
+import imgDB
+import deleteFile
+from os import listdir
 from os.path import isfile, join
 import os
+import string
 
 def train():
     path = os.getcwd() + "\image\\"
@@ -27,7 +28,7 @@ def train():
     model.train(np.asarray(Training_Data), np.asarray(Labels))
     return model
 
-def who_are(frame, startX, startY, endX, endY):
+def who_are(frame, startX, startY, endX, endY, name):
     #얼굴 검출
     gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     roi = frame[startY:endY, startX:endX]
@@ -40,12 +41,14 @@ def who_are(frame, startX, startY, endX, endY):
     models = imgDB.callResult()
 
     if not models:
-        imgDB.creTable(str(imgDB.name))
-        imgDB.imgToDB(str(imgDB.name), frame[startY:endY, startX:endX])
-        imgDB.imgFromDB(str(imgDB.name))
-        imgDB.saveResulte(str(imgDB.name), train())
+        imgDB.creTable(("n" + str(name)))
+        imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
+        imgDB.imgFromDB(("n" + str(name)))
+        print(type(train()))
+        print(train())
+        imgDB.saveResult(("n" + str(name)), train())
         deleteFile.delImg("1")
-        imgDB.name+=1
+        name+=1
         return
     
     for key, model in models.items():
@@ -53,8 +56,6 @@ def who_are(frame, startX, startY, endX, endY):
         if min_score>result[1]:
             min_score = result[1]
             min_score_name = key
-
-    print(min_score, models)
     
     if min_score<500:
         confidence = int(100*(1-(min_score)/300))
@@ -62,18 +63,20 @@ def who_are(frame, startX, startY, endX, endY):
     cv2.putText(frame, display_string, (100, 120), cv2.FONT_HERSHEY_COMPLEX, 1, (250, 120, 255), 2)
     if confidence>75:
         cv2.putText(frame, min_score_name, (250, 450), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
-        imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
-        imgDB.imgFromDB(str(min_score_name))
+        imgDB.imgToDB(("n" + str(min_score_name)), frame[startY:endY, startX:endX])
+        imgDB.imgFromDB(("n" + str(min_score_name)))
         train()
         path = os.getcwd() + "\image\\"
         onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
-        imgDB.saveResult(str(min_score_name), model)
+        imgDB.saveResult(("n" + str(min_score_name)), model)
         for i, files in enumerate(onlyfiles):
             image_path=path+onlyfiles[i]
             deleteFile.delImg(onlyfiles[i])
 
     else:
-        imgDB.creTable(str(imgDB.name))
-        imgDB.imgToDB(str(imgDB.name), frame[startY:endY, startX:endX])
-        imgDB.saveResulte(str(imgDB.name), model)
-        imgDB.name+=1
+        imgDB.creTable(("n" + str(name)))
+        imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
+        imgDB.saveResulte(("n" + str(name)), model)
+        name+=1
+    
+    return name
