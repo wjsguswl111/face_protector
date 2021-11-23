@@ -15,6 +15,8 @@ cam = cv2.VideoCapture("videos.mp4")
 
 imgDB.creTable2()
 
+name=1
+
 while True:
     img, frame = cam.read()
 
@@ -48,7 +50,7 @@ while True:
             y = startY - 10 if startY - 10 > 10 else startY + 10
             cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
             
-            who.who_are(frame, startX, startY, endX, endY)
+            name = who.who_are(frame, startX, startY, endX, endY, name)
 
     cv2.imshow('Face',frame)
     if cv2.waitKey(1)==27:

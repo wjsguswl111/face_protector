@@ -12,13 +12,6 @@ def creTable2():
                     user = 'root',
                     password = 'a5214645'
             )
-<<<<<<< HEAD
-
-name=0
-#값 저장하는 테이블 생성 함수
-def creTable2():
-=======
->>>>>>> 090beae1d33824fac1345b29158bd5128229b618
     try:
         cursor = connection.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS members (memName VARCHAR(255), result INT)")
@@ -59,23 +52,11 @@ def callResult():
         cursor.execute("SELECT * FROM members")
         res = cursor.fetchall()
 
-<<<<<<< HEAD
-        mem = list()
-        re = list()
-        #val = {}
-        for x in res:
-            mem.append(x[0])
-            re.append(x[1])
-            #val[x[0]] = x[1]
-            
-        return mem, re
-=======
         mem = {}
         for x in res:
             mem[x[0]] = x[1]
             
         return mem
->>>>>>> 090beae1d33824fac1345b29158bd5128229b618
 
     finally:
         connection.commit()
