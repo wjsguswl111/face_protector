@@ -21,6 +21,11 @@ class CWidget(QMainWindow):
         self.mediaPlayer = QMediaPlayer(None, QMediaPlayer.VideoSurface)
         videoWidget = QVideoWidget()
 
+        pal = QPalette()
+        pal.setColor(QPalette.Background, Qt.black)
+        videoWidget.setAutoFillBackground(True);
+        videoWidget.setPalette(pal)
+
         self.duration = ''
 
         self.mediaPlayer.durationChanged.connect(self.durationChanged)
