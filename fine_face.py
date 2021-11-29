@@ -11,11 +11,9 @@ protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-cam = cv2.VideoCapture("videos.mp4")
+cam = cv2.VideoCapture("see.mp4")
 
 imgDB.creTable2()
-
-name=1
 
 while True:
     img, frame = cam.read()
@@ -50,7 +48,14 @@ while True:
             y = startY - 10 if startY - 10 > 10 else startY + 10
             cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
             
-            name = who.who_are(frame, startX, startY, endX, endY, name)
+            #face_region = frame[startY:endY, startX:endX]
+            #M = face_region.shape[0]
+            #N = face_region.shape[1]
+            #face_region = cv2.resize(face_region, None, fx=0.05, fy=0.05, interpolation=cv2.INTER_AREA)
+            #face_region = cv2.resize(face_region, (N, M), interpolation=cv2.INTER_AREA)
+            #frame[startY:endY, startX:endX] = face_region
+
+            who.who_are(frame, startX, startY, endX, endY)
 
     cv2.imshow('Face',frame)
     if cv2.waitKey(1)==27:

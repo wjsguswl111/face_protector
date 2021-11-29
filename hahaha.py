@@ -1,82 +1,23 @@
 import numpy as np
-import cv2
-import imutils
-from PIL import ImageGrab, Image
-from pymysql import connect
-import imgDB
-import deleteFile
-from os import listdir
-from os.path import isfile, join
+import matplotlib.pyplot as plt
 import os
-import string
+import tensorflow as tf
+from tensorflow.python.keras import Sequential
+from tensorflow.python.keras.layers import Dense, Flatten, BatchNormalization
+from tensorflow.python.keras.preprocessing.image import load_img, img_to_array
 
-def train():
-    path = os.getcwd() + "\image\\"
-    onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
-    Training_Data, Labels = [], []
-    for i, files in enumerate(onlyfiles):
-        image_path = path + onlyfiles[i]
-        images = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
-        if images is None:
-            continue
-        Training_Data.append(np.asarray(images, dtype=np.uint8))
-        Labels.append(i)
-    if len(Labels)==0:
-        return None       
-    Labels = np.asarray(Labels, dtype=np.int32)
-    model = cv2.face.LBPHFaceRecognizer_create()
-    model.train(np.asarray(Training_Data), np.asarray(Labels))
-    return model
+path_dir = os.getcwd() + "\image\\"
+file_list = os.listdir(path_dir)
+file_num = len(file_list)
 
-def who_are(frame, startX, startY, endX, endY, name):
-    #얼굴 검출
-    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-    roi = frame[startY:endY, startX:endX]
-    roi = cv2.resize(roi, (200, 200))
+num=0
+all_img = np.float32(np.zeros(file_num, 224, 224, 3))
+all_label = np.float64(np.zeros(file_num, 1))
 
-    min_score=999
-    min_score_name=""
-    roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
-    
-    models = imgDB.callResult()
+for img_name in file_list:
+    img_path = path_dir + img_name
+    img = load_img(img_path, target_size=(224, 224))
 
-    if not models:
-        imgDB.creTable(("n" + str(name)))
-        imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
-        imgDB.imgFromDB(("n" + str(name)))
-        print(type(train()))
-        print(train())
-        imgDB.saveResult(("n" + str(name)), train())
-        deleteFile.delImg("1")
-        name+=1
-        return
-    
-    for key, model in models.items():
-        result = model.predict(roi)
-        if min_score>result[1]:
-            min_score = result[1]
-            min_score_name = key
-    
-    if min_score<500:
-        confidence = int(100*(1-(min_score)/300))
-        display_string = str(confidence)+ " confidence it is" + min_score_name
-    cv2.putText(frame, display_string, (100, 120), cv2.FONT_HERSHEY_COMPLEX, 1, (250, 120, 255), 2)
-    if confidence>75:
-        cv2.putText(frame, min_score_name, (250, 450), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
-        imgDB.imgToDB(("n" + str(min_score_name)), frame[startY:endY, startX:endX])
-        imgDB.imgFromDB(("n" + str(min_score_name)))
-        train()
-        path = os.getcwd() + "\image\\"
-        onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
-        imgDB.saveResult(("n" + str(min_score_name)), model)
-        for i, files in enumerate(onlyfiles):
-            image_path=path+onlyfiles[i]
-            deleteFile.delImg(onlyfiles[i])
-
-    else:
-        imgDB.creTable(("n" + str(name)))
-        imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
-        imgDB.saveResulte(("n" + str(name)), model)
-        name+=1
-    
-    return name
+    x = img_to_array(img)
+    x = np.expand_dims(x, axis=0)
+    x = preprocess_input(x)
