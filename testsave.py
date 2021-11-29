@@ -5,6 +5,16 @@ import imutils
 cap = cv2.VideoCapture('C:/Users/wjsgu/Desktop/test.avi')
 font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
 
+cap.set(3, 960)
+cap.set(4, 480)
+
+fps = 20
+width = int(cap.get(3))
+height = int(cap.get(4))
+fcc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
+
+out = cv2.VideoWriter('C:/Users/wjsgu/Desktop/save.avi', fcc, fps, (width, height))
+
 hog=cv2.HOGDescriptor()
 hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
 
@@ -16,9 +26,9 @@ while True:
     ret, frame = cap.read()
     grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
-    lower = lower_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
-    upper = upper_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
-    frame = imutils.resize(frame, width=1000, height=1000)
+    #lower = lower_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
+    #upper = upper_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
+    #frame = imutils.resize(frame, width=1000, height=1000)
 
 
     if not ret:
@@ -46,22 +56,12 @@ while True:
         body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
         frame[y:y+h,x:x+w] = body_img
 
-    for(x, y, w, h) in lower:
-        body_img=frame[y:y+h,x:x+w]
-        body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-        body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-        frame[y:y+h,x:x+w] = body_img
-
-    for(x, y, w, h) in upper:
-        body_img=frame[y:y+h,x:x+w]
-        body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-        body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-        frame[y:y+h,x:x+w] = body_img
-
     cv2.imshow("Detect", frame)
+    out.write(frame)
     if cv2.waitKey(10) == 27:
         break
-
+cap.release()
+out.release()
 cv2.destroyAllWindows()
 
 

@@ -14,7 +14,7 @@ def creTable2():
             )
     try:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS members (memName VARCHAR(255), result INT)")
+        cursor.execute("CREATE TABLE IF NOT EXISTS members (memName VARCHAR(255), result VARCHAR(255))")
 
     finally:
         connection.commit()
@@ -31,7 +31,7 @@ def saveResult(mem, re):
     try:
         cursor = connection.cursor()
         sql = "INSERT INTO members (memName, result) VALUES (%s, %s)"
-        re = str(re)
+        #re = str(re)
         val = (mem, re)
         cursor.execute(sql,val)
 
@@ -39,7 +39,7 @@ def saveResult(mem, re):
         connection.commit()
         connection.close()
 
-#갑 불러오기(이름)
+#값 불러오기(이름)
 def callResult():
     connection = pymysql.connect(
                     host = '127.0.0.1',
@@ -153,4 +153,90 @@ def imgFromDB(tableName):
 
 
     finally:
+        connection.close()
+
+def showTable():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SHOW TABLES")
+        res = cursor.fetchall()
+        tab = list()
+        for x in res:
+            characters = "(),'"
+            x=str(x)
+            for c in range(len(characters)):
+                x = x.replace(characters[c],"")
+            if x != "members" and x != "stars":
+                tab.append(x)
+        return tab
+
+    finally:
+        connection.commit()
+        connection.close()
+        
+def showimg(tableName):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT img, size FROM " + tableName + " LIMIT 1")
+        res = cursor.fetchall()
+        for x in res:
+            img=x[0]
+            size=x[1]
+        characters = "(),"
+        for c in range(len(characters)):
+            size = size.replace(characters[c],"")
+        size = size.split()
+        size = list(map(int, size))
+        img2 = img.split()
+        img2 = list(map(int, img2))
+        img2 = np.array(img2).reshape((int(size[0]),int(size[1]),int(size[2])))
+        return img2
+        
+            
+    finally:
+        connection.commit()
+        connection.close()
+
+def creStarTable():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("CREATE TABLE IF NOT EXISTS stars (memName VARCHAR(255))")
+
+    finally:
+        connection.commit()
+        connection.close()
+
+def intoStar(star):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        sql = "INSERT INTO stars (memName) VALUES (%s)"
+        val = (star)
+        cursor.execute(sql,val)
+
+    finally:
+        connection.commit()
         connection.close()
