@@ -1,15 +1,16 @@
 import os
 import cv2
 import imutils
-from PyQt5.QtMultimedia import QMediaPlaylist, QMediaPlayer, QMediaContent
-from PyQt5.QtCore import QUrl, QObject, pyqtSignal
-from testgui import CWidget
+#from PyQt5.QtMultimedia import QMediaPlaylist, QMediaPlayer, QMediaContent
+#from PyQt5.QtCore import QUrl, QObject, pyqtSignal
+#from testgui import CWidget
 
  
-def blur(self): 
+def blur(filename): 
     #cap = QMediaPlayer(None, QMediaPlayer.VideoSurface)
-    file = CWidget.add_open()
-    cap = cv2.VideoCapture(file)
+    #filename = CWidget.add_open()
+    #cap = cv2.VideoCapture(filename)
+    cap =cv2.VideoCapture('C:/Users/wjsgu/Desktop/test.avi')
     font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
 
     hog=cv2.HOGDescriptor()
@@ -65,5 +66,3 @@ def blur(self):
             break
 
     cv2.destroyAllWindows()
-
-

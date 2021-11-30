@@ -1,7 +1,7 @@
 import sys
 import datetime
 import cv2
-from test_body import *
+import test_body
 from PyQt5.QtWidgets import (QListWidget, QRadioButton, QSlider, QCheckBox, QGroupBox, QHBoxLayout, QMainWindow, qApp, QWidget, QPushButton, QApplication, QAction, QLabel, QFileDialog, QStyle, QVBoxLayout)
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QImage
 from PyQt5.QtCore import QThread, QDir, QObject, QTimer, QEventLoop, Qt, QUrl, pyqtSignal
@@ -65,10 +65,12 @@ class CWidget(QMainWindow):
         self.setCentralWidget(widget)
         
         groupBox = QGroupBox("모자이크 선택")
-        self.check_face = QRadioButton("Face")
-        self.check_body = QRadioButton("Body")
+        self.check_face = QCheckBox("Face")
+        self.check_body = QCheckBox("Body")
         self.check_body.clicked.connect(self.body_blur)
-        self.check_improper = QRadioButton("Improper")
+        self.check_improper = QCheckBox("Improper")
+        self.star_btn = QPushButton("즐겨찾기", self)
+        self.star_btn.setEnabled(False)
         
         self.slider_time = QSlider(Qt.Horizontal, self)
         self.slider_time.sliderMoved.connect(self.timeChange)
@@ -82,13 +84,14 @@ class CWidget(QMainWindow):
         self.slider_vol.setValue(0)
         self.slider_vol.valueChanged.connect(self.volumeChanged)
         
-        self.list = QListWidget(self)
-        self.list.itemDoubleClicked.connect(self.dbClickList)
+        #self.list = QListWidget(self)
+        #self.list.itemDoubleClicked.connect(self.dbClickList)
 
         topInnerLayout = QHBoxLayout()
         topInnerLayout.addWidget(self.check_face)
         topInnerLayout.addWidget(self.check_body)
         topInnerLayout.addWidget(self.check_improper)
+        topInnerLayout.addWidget(self.star_btn)
         groupBox.setLayout(topInnerLayout)
 
         topLayout = QVBoxLayout()
@@ -107,7 +110,7 @@ class CWidget(QMainWindow):
         thirdLayout.addWidget(self.playButton, 1)
         thirdLayout.addWidget(self.pauseButton, 1)
         thirdLayout.addWidget(self.stopButton, 1)
-        thirdLayout.addWidget(self.list, 1)
+        #thirdLayout.addWidget(self.list, 1)
 
         layout = QVBoxLayout()
         layout.addLayout(topLayout, 1)
@@ -136,22 +139,18 @@ class CWidget(QMainWindow):
 
     def add_open(self):
         global filename
+        global url
         filename, ext = QFileDialog.getOpenFileName(self, 'Open File', ''
                                              , ''
                                              , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
         print(filename)
         if filename:
-            self.list.addItem(filename)
-            self.list.setCurrentRow(0)
+            #self.list.addItem(filename)
+            #self.list.setCurrentRow(0)
             for f in filename:
                 url = QUrl.fromLocalFile(f)
         if filename != '':
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(filename)))
-        
-    def add_save(self):
-        filename= QFileDialog.getSaveFileName(self, 'Save File', ''
-                                             , ''
-                                             , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
     
     def play(self):
         self.mediaPlayer.play()
@@ -164,14 +163,17 @@ class CWidget(QMainWindow):
             self.mediaPlayer.pause()
 
     def add_save(self):
-        filename = QFileDialog.getSaveFileName(self, 'Save File', ''
-                                             , ''
-                                             , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
+        return filename
 
     def add_saveas(self):
-        filename = QFileDialog.getSaveFileName(self, 'Save as File', ''
+        global filesave
+        global save
+        filesave = QFileDialog.getSaveFileName(self, 'Save as File', ''
                                              , ''
                                              , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
+        str(filesave)
+        save = filesave.split('/')
+        print(save[5])
     
     def volumeChanged(self, vol):
         self.mediaPlayer.setVolume(vol)
@@ -218,15 +220,25 @@ class CWidget(QMainWindow):
             self.label3.setText(msg)
         self.state_signal.emit(msg)
 
-    def dbClickList(self, item):
+    '''def dbClickList(self, item):
         row = self.list.row(item)
         self.list.setCurrentIndex(item)
-        self.mediaPlayer.play()
+        self.mediaPlayer.play()'''
 
-    '''def body_blur(self):
-        file = filename
+    def body_blur(self):
+
         cap = cv2.VideoCapture(filename)
         font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
+
+        cap.set(3, 960)
+        cap.set(4, 480)
+
+        fps = 20
+        width = int(cap.get(3))
+        height = int(cap.get(4))
+        fcc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
+
+        out = cv2.VideoWriter(save, fcc, fps, (width, height))
 
         hog=cv2.HOGDescriptor()
         hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -241,29 +253,19 @@ class CWidget(QMainWindow):
             faces = face_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
             lower = lower_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
             upper = upper_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
-            #frame = imutils.resize(frame, width=1000, height=1000)
 
             if not ret:
                 break
     
-            #frame = imutils.resize(frame, width=800, height=800)
             detected, _=hog.detectMultiScale(frame)
 
             for(x, y, w, h) in detected:
-                #cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3, 4, 0)
                 body_img=frame[y:y+h,x:x+w]
                 body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
                 body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
                 frame[y:y+h,x:x+w] = body_img
 
             for(x, y, w, h) in faces:
-                #cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3, 4, 0)
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
-
-            for(x, y, w, h) in lower:
                 body_img=frame[y:y+h,x:x+w]
                 body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
                 body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
@@ -275,17 +277,24 @@ class CWidget(QMainWindow):
                 body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
                 frame[y:y+h,x:x+w] = body_img
 
+            for(x, y, w, h) in lower:
+                body_img=frame[y:y+h,x:x+w]
+                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
+                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
+                frame[y:y+h,x:x+w] = body_img
+
             cv2.imshow("Detect", frame)
+            out.write(frame)
             if cv2.waitKey(10) == 27:
                 break
+        cap.release()
+        out.release()
+        cv2.destroyAllWindows()
 
-        cv2.destroyAllWindows()'''
-
-    def body_blur(self):
-        blur()
+    '''def body_blur(self):
+        #file = filename
+        test_body.blur()'''
         
-
-
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = CWidget()
