@@ -6,12 +6,13 @@ from pymysql import connect
 import imgDB
 import deleteFile
 import who
+import hahaha
 
 protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-cam = cv2.VideoCapture("see.mp4")
+cam = cv2.VideoCapture("C:/Users/user/face_protector/two.mp4")
 
 imgDB.creTable2()
 
@@ -55,7 +56,8 @@ while True:
             #face_region = cv2.resize(face_region, (N, M), interpolation=cv2.INTER_AREA)
             #frame[startY:endY, startX:endX] = face_region
 
-            who.who_are(frame, startX, startY, endX, endY)
+            #who.who_are(frame, startX, startY, endX, endY)
+            #hahaha.who_are(frame, startX, startY, endX, endY)
 
     cv2.imshow('Face',frame)
     if cv2.waitKey(1)==27:

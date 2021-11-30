@@ -1,14 +1,15 @@
 import numpy as np
 import cv2
 import imutils
-from PIL import ImageGrab, Image
-from pymysql import NULL, connect
+from PIL import Image
+import pymysql
 import imgDB
 import deleteFile
 from os import listdir
 from os.path import isfile, join
 import os
 import string
+import imageio
 
 def train():
     path = os.getcwd() + "\image\\"
@@ -22,7 +23,7 @@ def train():
         Training_Data.append(np.asarray(images, dtype=np.uint8))
         Labels.append(i)
     if len(Labels)==0:
-        return None       
+        return None   
     Labels = np.asarray(Labels, dtype=np.int32)
     model = cv2.face.LBPHFaceRecognizer_create()
     model.train(np.asarray(Training_Data), np.asarray(Labels))
@@ -55,12 +56,11 @@ def who_are(frame, startX, startY, endX, endY):
     
     else:
         for key, paths in models.items():
-            model.read("samples\\" + str(key)+ ".yml")
+            model.read(paths)
             result = model.predict(roi)
             if min_score>result[1]:
                 min_score = result[1]
                 min_score_name = key
-                list(key)
                 name = int((list(key))[1]) + 1
         
         if min_score<500:
@@ -71,17 +71,17 @@ def who_are(frame, startX, startY, endX, endY):
             cv2.putText(frame, min_score_name, (250, 450), cv2.FONT_HERSHEY_COMPLEX, 1, (0, 255, 0), 2)
             imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
             imgDB.imgFromDB(str(min_score_name))
-            train().write("samples\\"+('n'+str(name))+".yml")
+            os.remove("samples\\"+str(min_score_name)+".yml")
+            train().write("samples\\"+(str(min_score_name))+".yml")
             path = os.getcwd() + "\image\\"
             onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
-            imgDB.saveResult(str(min_score_name), os.getcwd() + "\samples\\" + ('n'+str(name)) + ".yml")
+            imgDB.saveResult(str(min_score_name), os.getcwd() + "\samples\\" + (str(min_score_name)) + ".yml")
             for i, files in enumerate(onlyfiles):
                 image_path=path+onlyfiles[i]
                 deleteFile.delImg(onlyfiles[i])
 
         else:
             for key, paths in models.items():
-                list(key)
                 name = int((list(key))[1]) + 1
             imgDB.creTable(("n" + str(name)))
             imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
