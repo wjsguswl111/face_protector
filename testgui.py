@@ -9,7 +9,6 @@ from PyQt5.uic import loadUi
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 
-
 class CWidget(QMainWindow):
     
     state_signal = pyqtSignal(str)
@@ -83,9 +82,6 @@ class CWidget(QMainWindow):
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(0)
         self.slider_vol.valueChanged.connect(self.volumeChanged)
-        
-        #self.list = QListWidget(self)
-        #self.list.itemDoubleClicked.connect(self.dbClickList)
 
         topInnerLayout = QHBoxLayout()
         topInnerLayout.addWidget(self.check_face)
@@ -110,7 +106,6 @@ class CWidget(QMainWindow):
         thirdLayout.addWidget(self.playButton, 1)
         thirdLayout.addWidget(self.pauseButton, 1)
         thirdLayout.addWidget(self.stopButton, 1)
-        #thirdLayout.addWidget(self.list, 1)
 
         layout = QVBoxLayout()
         layout.addLayout(topLayout, 1)
@@ -145,8 +140,6 @@ class CWidget(QMainWindow):
                                              , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
         print(filename)
         if filename:
-            #self.list.addItem(filename)
-            #self.list.setCurrentRow(0)
             for f in filename:
                 url = QUrl.fromLocalFile(f)
         if filename != '':
@@ -171,15 +164,12 @@ class CWidget(QMainWindow):
         filesave, ext = QFileDialog.getSaveFileName(self, 'Save as File', ''
                                              , ''
                                              , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
-
     
     def volumeChanged(self, vol):
         self.mediaPlayer.setVolume(vol)
-        #print(vol)
 
     def timeChange(self, pos):
         self.mediaPlayer.setPosition(pos)
-        #print(pos)
 
     def durationChanged(self, duration):
         self.duration_signal.emit(duration)
@@ -218,18 +208,9 @@ class CWidget(QMainWindow):
             self.label3.setText(msg)
         self.state_signal.emit(msg)
 
-    '''def dbClickList(self, item):
-        row = self.list.row(item)
-        self.list.setCurrentIndex(item)
-        self.mediaPlayer.play()'''
-
     def body_blur(self):
-
         cap = cv2.VideoCapture(str(filename))
         font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
-
-        cap.set(3, 960)
-        cap.set(4, 480)
 
         fps = 20
         width = int(cap.get(3))
@@ -249,8 +230,8 @@ class CWidget(QMainWindow):
             ret, frame = cap.read()
             grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
             faces = face_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
-            lower = lower_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
-            upper = upper_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
+            lower = lower_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
+            upper = upper_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
 
             if not ret:
                 break
@@ -280,7 +261,12 @@ class CWidget(QMainWindow):
                 body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
                 body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
                 frame[y:y+h,x:x+w] = body_img
-
+            
+            '''if frame:
+                for f in frame:
+                    url = QUrl.fromLocalFile(f)
+                if frame != '':
+                    self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(frame)))'''
             cv2.imshow("Detect", frame)
             out.write(frame)
             if cv2.waitKey(10) == 27:
@@ -288,10 +274,6 @@ class CWidget(QMainWindow):
         cap.release()
         out.release()
         cv2.destroyAllWindows()
-
-    '''def body_blur(self):
-        #file = filename
-        test_body.blur()'''
         
 if __name__ == '__main__':
     app = QApplication(sys.argv)
