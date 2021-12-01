@@ -2,7 +2,7 @@ import sys
 import datetime
 import cv2
 import test_body
-from PyQt5.QtWidgets import (QListWidget, QRadioButton, QSlider, QCheckBox, QGroupBox, QHBoxLayout, QMainWindow, qApp, QWidget, QPushButton, QApplication, QAction, QLabel, QFileDialog, QStyle, QVBoxLayout)
+from PyQt5.QtWidgets import (QInputDialog, QListWidget, QMessageBox, QRadioButton, QSlider, QCheckBox, QGroupBox, QHBoxLayout, QMainWindow, qApp, QWidget, QPushButton, QApplication, QAction, QLabel, QFileDialog, QStyle, QVBoxLayout)
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QImage
 from PyQt5.QtCore import QThread, QDir, QObject, QTimer, QEventLoop, Qt, QUrl, pyqtSignal
 from PyQt5.uic import loadUi
@@ -166,13 +166,11 @@ class CWidget(QMainWindow):
         return filename
 
     def add_saveas(self):
-        global filesave
-        global save
-        filesave, ext = QFileDialog.getSaveFileName(self, 'Save as File', ''
-                                             , ''
-                                             , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
+        global savename
+        savename, ok = QInputDialog.getText(self, 'save file', '파일 이름과 확장자를 적어주세요.',)
+        if ok:
+            print(savename)
 
-    
     def volumeChanged(self, vol):
         self.mediaPlayer.setVolume(vol)
         #print(vol)
@@ -236,7 +234,7 @@ class CWidget(QMainWindow):
         height = int(cap.get(4))
         fcc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
 
-        out = cv2.VideoWriter(str(filesave), fcc, fps, (width, height))
+        out = cv2.VideoWriter(savename, fcc, fps, (width, height))
 
         hog=cv2.HOGDescriptor()
         hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
