@@ -225,7 +225,7 @@ class CWidget(QMainWindow):
 
     def body_blur(self):
 
-        cap = cv2.VideoCapture(filename)
+        cap = cv2.VideoCapture(str(filename))
         font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
 
         cap.set(3, 960)
