@@ -12,7 +12,7 @@ protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-cam = cv2.VideoCapture("C:/Users/user/face_protector/two.mp4")
+cam = cv2.VideoCapture("mask.mp4")
 
 imgDB.creTable2()
 
@@ -38,7 +38,6 @@ while True:
             (startX, startY, endX, endY) = box.astype("int")
 
             face = frame[startY:endY, startX:endX]
-            face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
             (fH, fW) = face.shape[:2]
 
             if fW < 20 or fH < 20 :
