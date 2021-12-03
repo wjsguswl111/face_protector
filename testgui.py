@@ -262,19 +262,18 @@ class CWidget(QMainWindow):
                 body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
                 frame[y:y+h,x:x+w] = body_img
             
-            '''if frame:
-                for f in frame:
-                    url = QUrl.fromLocalFile(f)
-                if frame != '':
-                    self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(frame)))'''
-            cv2.imshow("Detect", frame)
+            #cv2.imshow("Body", frame)
             out.write(frame)
-            if cv2.waitKey(10) == 27:
-                break
+            #if cv2.waitKey(10) == 27:
+                #break
         cap.release()
         out.release()
-        cv2.destroyAllWindows()
-        
+        #cv2.destroyAllWindows()
+
+    '''def face(self):
+    def improper(self):
+    def star(self):'''    
+
 if __name__ == '__main__':
     app = QApplication(sys.argv)
     ex = CWidget()
