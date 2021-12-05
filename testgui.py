@@ -209,7 +209,7 @@ class CWidget(QMainWindow):
         self.state_signal.emit(msg)
 
     def body_blur(self):
-        cap = cv2.VideoCapture(str(filename))
+        '''cap = cv2.VideoCapture(str(filename))
         font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
 
         fps = 20
@@ -261,14 +261,15 @@ class CWidget(QMainWindow):
                 body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
                 body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
                 frame[y:y+h,x:x+w] = body_img
-            
+
             #cv2.imshow("Body", frame)
             out.write(frame)
             #if cv2.waitKey(10) == 27:
                 #break
         cap.release()
         out.release()
-        #cv2.destroyAllWindows()
+        #cv2.destroyAllWindows()'''
+        test_body.blur()
 
     '''def face(self):
     def improper(self):
