@@ -62,6 +62,24 @@ def callResult():
         connection.commit()
         connection.close()
 
+'''
+def upResult(mem,re):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("UPDATE members SET result = %s WHERE memName = %s",(re, mem))
+        res = cursor.fetchall()
+
+    finally:
+        connection.commit()
+        connection.close()
+'''
+
 def creTable(tableName):
     connection = pymysql.connect(
                     host = '127.0.0.1',
@@ -93,8 +111,6 @@ def delTable(tableName):
         connection.close()
 
 def imgToDB(tableName, image):
-    #이미지 인수 넘겨 받으려면 수정 필요
-    #img = Image.open("C:\choun1.jpg")
     connection = pymysql.connect(
                     host = '127.0.0.1',
                     database = 'chosun',
@@ -179,7 +195,8 @@ def showTable():
     finally:
         connection.commit()
         connection.close()
-        
+
+#첫번째 이미지만 띄울때 사용  
 def showimg(tableName):
     connection = pymysql.connect(
                     host = '127.0.0.1',
@@ -203,12 +220,12 @@ def showimg(tableName):
         img2 = list(map(int, img2))
         img2 = np.array(img2).reshape((int(size[0]),int(size[1]),int(size[2])))
         return img2
-        
             
     finally:
         connection.commit()
         connection.close()
 
+#즐겨찾기 테이블 만드는것
 def creStarTable():
     connection = pymysql.connect(
                     host = '127.0.0.1',
@@ -219,10 +236,12 @@ def creStarTable():
     try:
         cursor = connection.cursor()
         cursor.execute("CREATE TABLE IF NOT EXISTS stars (memName VARCHAR(255))")
+        cursor.execute("ALTER TABLE stars ADD UNIQUE INDEX (memName)")
 
     finally:
         connection.commit()
         connection.close()
+
 
 def intoStar(star):
     connection = pymysql.connect(
@@ -233,10 +252,72 @@ def intoStar(star):
             )
     try:
         cursor = connection.cursor()
-        sql = "INSERT INTO stars (memName) VALUES (%s)"
+        sql = "INSERT IGNORE INTO stars (memName) VALUES (%s)"
         val = (star)
         cursor.execute(sql,val)
 
     finally:
         connection.commit()
         connection.close()
+
+#즐겨찾기로부터 이름 가져오는것
+def fromStar():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT memName FROM stars")
+        res = cursor.fetchall()
+
+        li = []
+        for x in res:
+            characters = "(),'"
+            for c in range(len(characters)):
+                x =str(x).replace(characters[c],"")
+            li.append(x)
+        return li
+
+    finally:
+        connection.commit()
+        connection.close()
+
+#테이블 이름 바꾸기
+def rename(old,new):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("ALTER TABLE "+old+" RENAME "+new)
+
+    finally:
+        connection.commit()
+        connection.close()
+
+#스타테이블에 저장된 이름 바꾸기
+def reStar(old,new):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("UPDATE stars SET memName = %s WHERE memName = %s",(new,old))
+
+    finally:
+        connection.commit()
+        connection.close()
+    
+ #모자이크 다 끝나고 members 다 비우기
+ #즐겨찾기ㅣ 할사람빼고 파일 다지우기yml
+ #stars에 경로 저장할 곳 추가
+ #yml 파일 라내암
