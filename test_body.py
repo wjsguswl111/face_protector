@@ -4,11 +4,12 @@ import imutils
 #from PyQt5.QtMultimedia import QMediaPlaylist, QMediaPlayer, QMediaContent
 #from PyQt5.QtCore import QUrl, QObject, pyqtSignal
 #from testgui import CWidget
-from testgui import *
+
 
  
 def blur(): 
-    cap = cv2.VideoCapture(str(filename))
+    import testgui
+    cap = cv2.VideoCapture(str(testgui.filename))
     font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
 
     fps = 20
@@ -16,7 +17,7 @@ def blur():
     height = int(cap.get(4))
     fcc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
 
-    out = cv2.VideoWriter(str(filesave), fcc, fps, (width, height))
+    out = cv2.VideoWriter(str(testgui.filesave), fcc, fps, (width, height))
 
     hog=cv2.HOGDescriptor()
     hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
@@ -61,10 +62,10 @@ def blur():
             body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
             frame[y:y+h,x:x+w] = body_img
             
-        #cv2.imshow("Body", frame)
+        cv2.imshow("Body", frame)
         out.write(frame)
-        #if cv2.waitKey(10) == 27:
-            #break
+        if cv2.waitKey(10) == 27:
+            break
     cap.release()
     out.release()
-    #cv2.destroyAllWindows()
+    cv2.destroyAllWindows()
