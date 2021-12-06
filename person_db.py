@@ -1,215 +1,93 @@
-#!/usr/bin/env python3
-
-import os
 import cv2
-import imutils
-import shutil
-import face_recognition
-import numpy as np
 import time
-import pickle
+import numpy as np
+
+MODE = "MPI"
+
+if MODE is "COCO":
+    protoFile = "pose_deploy_linevec.prototxt"
+    weightsFile = "pose/coco/pose_iter_440000.caffemodel"
+    nPoints = 18
+    POSE_PAIRS = [ [1,0],[1,2],[1,5],[2,3],[3,4],[5,6],[6,7],[1,8],[8,9],[9,10],[1,11],[11,12],[12,13],[0,14],[0,15],[14,16],[15,17]]
+
+elif MODE is "MPI" :
+    protoFile = "pose/mpi/pose_deploy_linevec_faster_4_stages.prototxt"
+    weightsFile = "pose/mpi/pose_iter_160000.caffemodel"
+    nPoints = 15
+    POSE_PAIRS = [[0,1], [1,2], [2,3], [3,4], [1,5], [5,6], [6,7], [1,14], [14,8], [8,9], [9,10], [14,11], [11,12], [12,13] ]
 
 
-class Face():
-    key = "face_encoding"
-
-    def __init__(self, filename, image, face_encoding):
-        self.filename = filename
-        self.image = image
-        self.encoding = face_encoding
-
-    def save(self, base_dir):
-        # save image
-        pathname = os.path.join(base_dir, self.filename)
-        cv2.imwrite(pathname, self.image)
-
-    @classmethod
-    def get_encoding(cls, image):
-        rgb = image[:, :, ::-1]
-        boxes = face_recognition.face_locations(rgb, model="hog")
-        if not boxes:
-            height, width, channels = image.shape
-            top = int(height/3)
-            bottom = int(top*2)
-            left = int(width/3)
-            right = int(left*2)
-            box = (top, right, bottom, left)
-        else:
-            box = boxes[0]
-        return face_recognition.face_encodings(image, [box])[0]
+inWidth = 368
+inHeight = 368
+threshold = 0.1
 
 
-class Person():
-    _last_id = 0
+input_source = "output-roy.avi"
+cap = cv2.VideoCapture(input_source)
+hasFrame, frame = cap.read()
 
-    def __init__(self, name=None):
-        if name is None:
-            Person._last_id += 1
-            self.name = "person_%02d" % Person._last_id
-        else:
-            self.name = name
-            if name.startswith("person_") and name[7:].isdigit():
-                id = int(name[7:])
-                if id > Person._last_id:
-                    Person._last_id = id
-        self.encoding = None
-        self.faces = []
+vid_writer = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
 
-    def add_face(self, face):
-        # add face
-        self.faces.append(face)
+net = cv2.dnn.readNetFromCaffe(protoFile, weightsFile)
 
-    def calculate_average_encoding(self):
-        if len(self.faces) is 0:
-            self.encoding = None
-        else:
-            encodings = [face.encoding for face in self.faces]
-            self.encoding = np.average(encodings, axis=0)
+while cv2.waitKey(1) < 0:
+    t = time.time()
+    hasFrame, frame = cap.read()
+    frameCopy = np.copy(frame)
+    if not hasFrame:
+        cv2.waitKey()
+        break
 
-    def distance_statistics(self):
-        encodings = [face.encoding for face in self.faces]
-        distances = face_recognition.face_distance(encodings, self.encoding)
-        return min(distances), np.mean(distances), max(distances)
+    frameWidth = frame.shape[1]
+    frameHeight = frame.shape[0]
 
-    def save_faces(self, base_dir):
-        pathname = os.path.join(base_dir, self.name)
-        try:
-            shutil.rmtree(pathname)
-        except OSError as e:
-            pass
-        os.mkdir(pathname)
-        for face in self.faces:
-            face.save(pathname)
+    inpBlob = cv2.dnn.blobFromImage(frame, 1.0 / 255, (inWidth, inHeight),
+                              (0, 0, 0), swapRB=False, crop=False)
+    net.setInput(inpBlob)
+    output = net.forward()
 
-    def save_montages(self, base_dir):
-        images = [face.image for face in self.faces]
-        montages = imutils.build_montages(images, (128, 128), (6, 2))
-        for i, montage in enumerate(montages):
-            filename = "montage." + self.name + ("-%02d.png" % i)
-            pathname = os.path.join(base_dir, filename)
-            cv2.imwrite(pathname, montage)
+    H = output.shape[2]
+    W = output.shape[3]
+    # Empty list to store the detected keypoints
+    points = []
 
-    @classmethod
-    def load(cls, pathname, face_encodings):
-        basename = os.path.basename(pathname)
-        person = Person(basename)
-        for face_filename in os.listdir(pathname):
-            face_pathname = os.path.join(pathname, face_filename)
-            image = cv2.imread(face_pathname)
-            if image.size == 0:
-                continue
-            if face_filename in face_encodings:
-                face_encoding = face_encodings[face_filename]
-            else:
-                print(pathname, face_filename, "calculate encoding")
-                face_encoding = Face.get_encoding(image)
-            if face_encoding is None:
-                print(pathname, face_filename, "drop face")
-            else:
-                face = Face(face_filename, image, face_encoding)
-                person.faces.append(face)
-        print(person.name, "has", len(person.faces), "faces")
-        person.calculate_average_encoding()
-        return person
+    for i in range(nPoints):
+        # confidence map of corresponding body's part.
+        probMap = output[0, i, :, :]
 
-class PersonDB():
-    def __init__(self):
-        self.persons = []
-        self.unknown_dir = "unknowns"
-        self.encoding_file = "face_encodings"
-        self.unknown = Person(self.unknown_dir)
+        # Find global maxima of the probMap.
+        minVal, prob, minLoc, point = cv2.minMaxLoc(probMap)
+        
+        # Scale the point to fit on the original image
+        x = (frameWidth * point[0]) / W
+        y = (frameHeight * point[1]) / H
 
-    def load_db(self, dir_name):
-        if not os.path.isdir(dir_name):
-            return
-        print("Start loading persons in the directory '%s'" % dir_name)
-        start_time = time.time()
+        if prob > threshold : 
+            cv2.circle(frameCopy, (int(x), int(y)), 8, (0, 255, 255), thickness=-1, lineType=cv2.FILLED)
+            cv2.putText(frameCopy, "{}".format(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, lineType=cv2.LINE_AA)
 
-        # read face_encodings
-        pathname = os.path.join(dir_name, self.encoding_file)
-        try:
-            with open(pathname, "rb") as f:
-                face_encodings = pickle.load(f)
-                print(len(face_encodings), "face_encodings in", pathname)
-        except:
-            face_encodings = {}
+            # Add the point to the list if the probability is greater than the threshold
+            points.append((int(x), int(y)))
+        else :
+            points.append(None)
 
-        # read persons
-        for entry in os.scandir(dir_name):
-            if entry.is_dir(follow_symlinks=False):
-                pathname = os.path.join(dir_name, entry.name)
-                person = Person.load(pathname, face_encodings)
-                if len(person.faces) == 0:
-                    continue
-                if entry.name == self.unknown_dir:
-                    self.unknown = person
-                else:
-                    self.persons.append(person)
-        elapsed_time = time.time() - start_time
-        print("Loading persons finished in %.3f sec." % elapsed_time)
+    # Draw Skeleton
+    for pair in POSE_PAIRS:
+        partA = pair[0]
+        partB = pair[1]
 
-    def save_encodings(self, dir_name):
-        face_encodings = {}
-        for person in self.persons:
-            for face in person.faces:
-                face_encodings[face.filename] = face.encoding
-        for face in self.unknown.faces:
-            face_encodings[face.filename] = face.encoding
-        pathname = os.path.join(dir_name, self.encoding_file)
-        with open(pathname, "wb") as f:
-            pickle.dump(face_encodings, f)
-        print(pathname, "saved")
+        if points[partA] and points[partB]:
+            cv2.line(frame, points[partA], points[partB], (0, 255, 255), 3, lineType=cv2.LINE_AA)
+            cv2.circle(frame, points[partA], 8, (0, 0, 255), thickness=-1, lineType=cv2.FILLED)
+            cv2.circle(frame, points[partB], 8, (0, 0, 255), thickness=-1, lineType=cv2.FILLED)
 
-    def save_montages(self, dir_name):
-        for person in self.persons:
-            person.save_montages(dir_name)
-        self.unknown.save_montages(dir_name)
-        print("montages saved")
+    cv2.putText(frame, "time taken = {:.2f} sec".format(time.time() - t), (50, 50), cv2.FONT_HERSHEY_COMPLEX, .8, (255, 50, 0), 2, lineType=cv2.LINE_AA)
+    # cv2.putText(frame, "OpenPose using OpenCV", (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 50, 0), 2, lineType=cv2.LINE_AA)
+    # cv2.imshow('Output-Keypoints', frameCopy)
+    cv2.imshow('Output-Skeleton', frame)
 
-    def save_db(self, dir_name):
-        print("Start saving persons in the directory '%s'" % dir_name)
-        start_time = time.time()
-        try:
-            shutil.rmtree(dir_name)
-        except OSError as e:
-            pass
-        os.mkdir(dir_name)
+    vid_writer.write(frame)
+    if cv2.waitKey(10) == 27:
+        break
 
-        for person in self.persons:
-            person.save_faces(dir_name)
-        self.unknown.save_faces(dir_name)
-
-        self.save_montages(dir_name)
-        self.save_encodings(dir_name)
-
-        elapsed_time = time.time() - start_time
-        print("Saving persons finished in %.3f sec." % elapsed_time)
-
-    def __repr__(self):
-        s = "%d persons" % len(self.persons)
-        num_known_faces = sum(len(person.faces) for person in self.persons)
-        s += ", %d known faces" % num_known_faces
-        s += ", %d unknown faces" % len(self.unknown.faces)
-        return s
-
-    def print_persons(self):
-        print(self)
-        persons = sorted(self.persons, key=lambda obj : obj.name)
-        encodings = [person.encoding for person in persons]
-        for person in persons:
-            distances = face_recognition.face_distance(encodings, person.encoding)
-            s = "{:10} [ ".format(person.name)
-            s += " ".join(["{:5.3f}".format(x) for x in distances])
-            mn, av, mx = person.distance_statistics()
-            s += " ] %.3f, %.3f, %.3f" % (mn, av, mx)
-            s += ", %d faces" % len(person.faces)
-            print(s)
-
-
-if __name__ == '__main__':
-    dir_name = "result"
-    pdb = PersonDB()
-    pdb.load_db(dir_name)
-    pdb.print_persons()
-    pdb.save_montages(dir_name)
-    pdb.save_encodings(dir_name)
+cv2.destroyAllWindows()
