@@ -15,7 +15,7 @@ protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-video = cv2.VideoCapture("two_person.mp4")
+video = cv2.VideoCapture("test1.mp4")
 
 name = 1
 
@@ -96,7 +96,7 @@ while True:
                 if min_score<500:
                     confidence = int(100*(1-(min_score)/300))
                 print(confidence)
-                if confidence>70:
+                if confidence>50:
                     imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
 
                 else:
@@ -118,7 +118,7 @@ while True:
                     
                     if min_score<500:
                         confidence = int(100*(1-(min_score)/300))
-                    if confidence>70:
+                    if confidence>50:
                         imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
 
                     else:
