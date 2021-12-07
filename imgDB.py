@@ -372,6 +372,36 @@ def cleanMember():
     finally:
         connection.commit()
         connection.close()
+
+def reMem(old,file,new):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("UPDATE members SET memName = %s, result=%s WHERE memName = %s",(new,file,old))
+        ####경로이름바꾸기##################################################
+
+    finally:
+        connection.commit()
+        connection.close()
+  
+def auto():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        connection.autocommit(True)
+
+    finally:
+        connection.commit()
+        connection.close()
  #모자이크 다 끝나고 members 다 비우기
  #즐겨찾기ㅣ 할사람빼고 파일 다지우기yml
  #stars에 경로 저장할 곳 추가 ##

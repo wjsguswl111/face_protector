@@ -1,3 +1,3 @@
-import imgDB
+import new_test
 
-imgDB.delMember("111")
+new_test.faceDetec()

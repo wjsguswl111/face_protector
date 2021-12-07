@@ -6,12 +6,17 @@ from numpy.lib import polynomial
 import imgDB
 import imageio
 import os
+from PyQt5 import QtCore
+
 import deleteFile
-   
-class Main(QDialog):
+import face_classifier
+import insName
+
+class Main2(QDialog):
     def __init__(self):
         super().__init__()
         self.init_ui()
+
 
     def init_ui(self):
         tab = QTabWidget()
@@ -26,6 +31,7 @@ class Main(QDialog):
         self.setLayout(main_layout)
         self.resize(600, 600)
         self.show()
+        
 
     def create_tab_1(self):
         formlayout = QFormLayout()
@@ -91,12 +97,17 @@ class Main(QDialog):
                     imgDB.delTable(li[x])
                     imgDB.delMember(li[x])
                     deleteFile.delYml(li[x])
-            
-                
-        
+            face_classifier.classify()
+        win = insName.Main3()
+        win.showModal2()
 
-if __name__ == '__main__':
-    imgDB.creStarTable()
-    app = QApplication(sys.argv)
-    main = Main()
-    sys.exit(app.exec_())
+    def showModal(self):
+        return super().exec_()
+
+
+#     imgDB.creStarTable()
+#     app = QApplication(sys.argv)
+#     main = Main()
+#     sys.exit(app.exec_())
+# if __name__ == '__main__':
+#     main()

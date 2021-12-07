@@ -18,5 +18,8 @@ def delYml(imgName):
 
 #############파일이름바꾸기
 def renameYml(old,new):
-    file = "\samples\\"+old+".yml"
-    os.renames(file,file.replace(old,new))
+    path = os.getcwd()
+    file = path+"\samples\\"+old+".yml"
+    nfile = file.replace(old,new)
+    os.renames(file,nfile)
+    return nfile

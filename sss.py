@@ -1,0 +1,3 @@
+import detecList
+
+detecList.main()
