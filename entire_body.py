@@ -16,21 +16,25 @@ while True:
     ret, frame = cap.read()
     grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
+<<<<<<< HEAD
+<<<<<<< HEAD
+    lower = lower_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
+    upper = upper_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
+    #frame = imutils.resize(frame, width=600, height=600)
+=======
+=======
+>>>>>>> e26ae08cecfedbb54202c8b448264031283648da
     lower = lower_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
     upper = upper_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
     frame = imutils.resize(frame, width=1000, height=1000)
 
+>>>>>>> main
 
     if not ret:
         break
     
     #frame = imutils.resize(frame, width=800, height=800)
     detected, _=hog.detectMultiScale(frame)
-
-    '''for (x,y,w,h) in faces:
-        for(x, y, w, h) in detected:
-            cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3, 4, 0)
-        #cv2.putText(frame, (x-5, y-5), font, 0.9, (255,255,0),2)'''
 
     for(x, y, w, h) in detected:
         #cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3, 4, 0)
@@ -58,7 +62,14 @@ while True:
         body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
         frame[y:y+h,x:x+w] = body_img
 
+<<<<<<< HEAD
+<<<<<<< HEAD
+    cv2.imshow("Body", frame)
+=======
+=======
+>>>>>>> e26ae08cecfedbb54202c8b448264031283648da
     cv2.imshow("Detect", frame)
+>>>>>>> main
     if cv2.waitKey(10) == 27:
         break
 

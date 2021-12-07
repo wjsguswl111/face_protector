@@ -6,13 +6,22 @@ from pymysql import connect
 import imgDB
 import deleteFile
 import who
+<<<<<<< HEAD
+=======
 import hahaha
+>>>>>>> e26ae08cecfedbb54202c8b448264031283648da
 
 protoPath = "deploy.prototxt"
 modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
 detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
+<<<<<<< HEAD
+name = 0
+
+cam = cv2.VideoCapture("videos.mp4")
+=======
 cam = cv2.VideoCapture("two_person.mp4")
+>>>>>>> e26ae08cecfedbb54202c8b448264031283648da
 
 imgDB.creTable2()
 
@@ -38,6 +47,10 @@ while True:
             (startX, startY, endX, endY) = box.astype("int")
 
             face = frame[startY:endY, startX:endX]
+<<<<<<< HEAD
+            face = cv2.cvtColor(face, cv2.COLOR_BGR2RGB)
+=======
+>>>>>>> e26ae08cecfedbb54202c8b448264031283648da
             (fH, fW) = face.shape[:2]
 
             if fW < 20 or fH < 20 :
@@ -48,6 +61,9 @@ while True:
             y = startY - 10 if startY - 10 > 10 else startY + 10
             cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
             
+<<<<<<< HEAD
+            who.who_are(frame, startX, startY, endX, endY)
+=======
             #face_region = frame[startY:endY, startX:endX]
             #M = face_region.shape[0]
             #N = face_region.shape[1]
@@ -57,6 +73,7 @@ while True:
 
             #who.who_are(frame, startX, startY, endX, endY)
             hahaha.who_are(frame, startX, startY, endX, endY)
+>>>>>>> e26ae08cecfedbb54202c8b448264031283648da
 
     cv2.imshow('Face',frame)
     if cv2.waitKey(1)==27:

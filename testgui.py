@@ -1,7 +1,18 @@
 import sys
 import datetime
 import cv2
-from test_body import *
+#import test_body
+import numpy as np
+import imutils
+from PIL import ImageGrab, Image
+from pymysql import connect
+import imgDB
+import deleteFile
+import pymysql
+from os import listdir
+from os.path import isfile, join
+import os
+import imageio
 from PyQt5.QtWidgets import (QListWidget, QRadioButton, QSlider, QCheckBox, QGroupBox, QHBoxLayout, QMainWindow, qApp, QWidget, QPushButton, QApplication, QAction, QLabel, QFileDialog, QStyle, QVBoxLayout)
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QImage
 from PyQt5.QtCore import QThread, QDir, QObject, QTimer, QEventLoop, Qt, QUrl, pyqtSignal
@@ -9,9 +20,7 @@ from PyQt5.uic import loadUi
 from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 
-
 class CWidget(QMainWindow):
-    
     state_signal = pyqtSignal(str)
     duration_signal = pyqtSignal(int)
     position_signal = pyqtSignal(int)
@@ -65,10 +74,13 @@ class CWidget(QMainWindow):
         self.setCentralWidget(widget)
         
         groupBox = QGroupBox("모자이크 선택")
-        self.check_face = QRadioButton("Face")
-        self.check_body = QRadioButton("Body")
-        self.check_body.clicked.connect(self.body_blur)
-        self.check_improper = QRadioButton("Improper")
+        self.check_face = QCheckBox("Face")
+        self.check_face.clicked.connect(self.face_detection)
+        self.check_body = QCheckBox("Body")
+        #self.check_body.clicked.connect(self.body_blur)
+        self.check_improper = QCheckBox("Improper")
+        self.star_btn = QPushButton("즐겨찾기", self)
+        self.star_btn.setEnabled(False)
         
         self.slider_time = QSlider(Qt.Horizontal, self)
         self.slider_time.sliderMoved.connect(self.timeChange)
@@ -81,14 +93,12 @@ class CWidget(QMainWindow):
         self.slider_vol.setRange(0, 100)
         self.slider_vol.setValue(0)
         self.slider_vol.valueChanged.connect(self.volumeChanged)
-        
-        self.list = QListWidget(self)
-        self.list.itemDoubleClicked.connect(self.dbClickList)
 
         topInnerLayout = QHBoxLayout()
         topInnerLayout.addWidget(self.check_face)
         topInnerLayout.addWidget(self.check_body)
         topInnerLayout.addWidget(self.check_improper)
+        topInnerLayout.addWidget(self.star_btn)
         groupBox.setLayout(topInnerLayout)
 
         topLayout = QVBoxLayout()
@@ -107,7 +117,6 @@ class CWidget(QMainWindow):
         thirdLayout.addWidget(self.playButton, 1)
         thirdLayout.addWidget(self.pauseButton, 1)
         thirdLayout.addWidget(self.stopButton, 1)
-        thirdLayout.addWidget(self.list, 1)
 
         layout = QVBoxLayout()
         layout.addLayout(topLayout, 1)
@@ -136,22 +145,16 @@ class CWidget(QMainWindow):
 
     def add_open(self):
         global filename
+        global url
         filename, ext = QFileDialog.getOpenFileName(self, 'Open File', ''
                                              , ''
                                              , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
         print(filename)
         if filename:
-            self.list.addItem(filename)
-            self.list.setCurrentRow(0)
             for f in filename:
                 url = QUrl.fromLocalFile(f)
         if filename != '':
             self.mediaPlayer.setMedia(QMediaContent(QUrl.fromLocalFile(filename)))
-        
-    def add_save(self):
-        filename= QFileDialog.getSaveFileName(self, 'Save File', ''
-                                             , ''
-                                             , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
     
     def play(self):
         self.mediaPlayer.play()
@@ -164,22 +167,20 @@ class CWidget(QMainWindow):
             self.mediaPlayer.pause()
 
     def add_save(self):
-        filename = QFileDialog.getSaveFileName(self, 'Save File', ''
-                                             , ''
-                                             , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
+        return filename
 
     def add_saveas(self):
-        filename = QFileDialog.getSaveFileName(self, 'Save as File', ''
+        global filesave
+        global save
+        filesave, ext = QFileDialog.getSaveFileName(self, 'Save as File', ''
                                              , ''
                                              , 'Video (*.mp4 *.mpg *.mpeg *.avi *.wma)')
     
     def volumeChanged(self, vol):
         self.mediaPlayer.setVolume(vol)
-        #print(vol)
 
     def timeChange(self, pos):
         self.mediaPlayer.setPosition(pos)
-        #print(pos)
 
     def durationChanged(self, duration):
         self.duration_signal.emit(duration)
@@ -218,73 +219,146 @@ class CWidget(QMainWindow):
             self.label3.setText(msg)
         self.state_signal.emit(msg)
 
-    def dbClickList(self, item):
-        row = self.list.row(item)
-        self.list.setCurrentIndex(item)
-        self.mediaPlayer.play()
+    def face_detection(self):
+        protoPath = "deploy.prototxt"
+        modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
+        detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-    '''def body_blur(self):
-        file = filename
-        cap = cv2.VideoCapture(filename)
-        font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
+        video = cv2.VideoCapture(filename)
+        
+        width = int(cv2.CAP_PROP_FRAME_WIDTH)
+        height = int(cv2.CAP_PROP_FRAME_HEIGHT)
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(filesave, fourcc, 20.0, (height, width))
 
-        hog=cv2.HOGDescriptor()
-        hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+        name = 1
 
-        face_cascade = cv2.CascadeClassifier('haarcascade_fullbody.xml')
-        lower_cascade = cv2.CascadeClassifier('haarcascade_lowerbody.xml')
-        upper_cascade = cv2.CascadeClassifier('haarcascade_upperbody.xml')
+        imgDB.creTable2()
 
-        while True:
-            ret, frame = cap.read()
-            grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
-            lower = lower_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
-            upper = upper_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
-            #frame = imutils.resize(frame, width=1000, height=1000)
-
-            if not ret:
-                break
-    
-            #frame = imutils.resize(frame, width=800, height=800)
-            detected, _=hog.detectMultiScale(frame)
-
-            for(x, y, w, h) in detected:
-                #cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3, 4, 0)
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
-
-            for(x, y, w, h) in faces:
-                #cv2.rectangle(frame,(x,y),(x+w,y+h),(0,255,0),3, 4, 0)
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
-
-            for(x, y, w, h) in lower:
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
-
-            for(x, y, w, h) in upper:
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
-
-            cv2.imshow("Detect", frame)
-            if cv2.waitKey(10) == 27:
-                break
-
-        cv2.destroyAllWindows()'''
-
-    def body_blur(self):
-        blur()
+        def train():
+            path = os.getcwd() + "\image\\"
+            onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+            Training_Data, Labels = [], []
+            for i, files in enumerate(onlyfiles):
+                image_path = path + onlyfiles[i]
+                images = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+                if images is None:
+                    continue
+                Training_Data.append(np.asarray(images, dtype=np.uint8))
+                Labels.append(i)
+            if len(Labels)==0:
+                return None   
+            Labels = np.asarray(Labels, dtype=np.int32)
+            model = cv2.face.LBPHFaceRecognizer_create()
+            model.train(np.asarray(Training_Data), np.asarray(Labels))
+            return model
         
 
+        while True:
+
+            img, frame = video.read()
+
+            if type(frame) == type(None):
+                break
+
+            #frame = imutils.resize(frame, width=400)
+            (h, w) = frame.shape[:2]
+
+            imageBlob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
+            
+            detector.setInput(imageBlob)
+            detections = detector.forward()
+
+            for i in range(0, detections.shape[2]):
+                confidence = detections[0, 0, i, 2]
+
+                if confidence > 0.5 :
+                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                    (startX, startY, endX, endY) = box.astype("int")
+
+                    (startX, startY) = (max(0, startX), max(0, startY))
+                    (endX, endY) = (min(w-1, endX), min(h-1, endY))
+                    cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
+                    
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    roi = frame[startY:endY, startX:endX]
+                    #roi = cv2.resize(roi, (200, 200))
+
+                    min_score=999
+                    min_score_name=""
+                    roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+                    
+                    model = cv2.face.LBPHFaceRecognizer_create()
+
+                    models = imgDB.callResult()
+
+                    if not models:
+                        imgDB.creTable(("n" + str(name)))
+                        imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
+                        imgDB.imgFromDB(("n" + str(name)))
+                        train().write("samples\\"+('n'+str(name))+".yml")
+                        imgDB.saveResult(("n" + str(name)), os.getcwd() + "\samples\\" + ('n'+str(name)) + ".yml")
+                        deleteFile.delImg("1")
+                        name = name+1
+                    
+                    else:
+                        for key, paths in models.items():
+                            model.read(paths)
+                            result = model.predict(roi)
+                            if min_score>result[1]:
+                                min_score = result[1]
+                                min_score_name = key
+                        
+                        if min_score<500:
+                            confidence = int(100*(1-(min_score)/300))
+                        print(confidence)
+                        if confidence>70:
+                            imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
+
+                        else:
+                            for key, path in models.items():
+                                os.remove("samples\\"+str(key)+".yml")
+                                imgDB.imgFromDB(str(key))
+                                train().write("samples\\"+str(key)+".yml")
+                                jpgpath = os.getcwd() + "\image\\"
+                                for file in os.listdir(jpgpath):
+                                    deleteFile.delImg(file.split(".")[0])
+
+                            models = imgDB.callResult()
+                            for key, paths in models.items():
+                                model.read(paths)
+                                id, result = model.predict(roi)
+                                if min_score>result:
+                                    min_score = result
+                                    min_score_name = key
+                            
+                            if min_score<500:
+                                confidence = int(100*(1-(min_score)/300))
+                            if confidence>70:
+                                imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
+
+                            else:
+                                imgDB.creTable(("n" + str(name)))
+                                imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
+                                imgDB.imgFromDB(("n" + str(name)))
+                                train().write("samples\\"+('n'+str(name))+".yml")
+                                imgDB.saveResult(("n" + str(name)), os.getcwd() + "\samples\\" + ('n'+str(name)) + ".yml")
+                                deleteFile.delImg("1")
+                                name = name+1
+            
+            
+            cv2.imshow('Face',frame)
+            out.write(frame)
+            if cv2.waitKey(1)==27:
+                break
+
+        video.release()
+        out.release()
+        cv2.destroyAllWindows()
+
+    '''def face(self):
+    def improper(self):
+    def star(self):'''
 
 if __name__ == '__main__':
     app = QApplication(sys.argv)
