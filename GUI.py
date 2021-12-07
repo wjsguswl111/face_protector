@@ -105,7 +105,6 @@ class CWidget(QMainWindow):
         thirdLayout.addWidget(self.playButton, 1)
         thirdLayout.addWidget(self.pauseButton, 1)
         thirdLayout.addWidget(self.stopButton, 1)
-
         layout = QVBoxLayout()
         layout.addLayout(topLayout, 1)
         layout.addWidget(videoWidget, 1200)
