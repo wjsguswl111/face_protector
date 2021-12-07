@@ -1,93 +1,96 @@
-import cv2
+from array import array
+import os
+from PIL import Image, ImageDraw
+import sys
 import time
+from io import BytesIO
+import requests
+import cv2
+import io
 import numpy as np
+import test3
 
-MODE = "MPI"
-
-if MODE is "COCO":
-    protoFile = "pose_deploy_linevec.prototxt"
-    weightsFile = "pose/coco/pose_iter_440000.caffemodel"
-    nPoints = 18
-    POSE_PAIRS = [ [1,0],[1,2],[1,5],[2,3],[3,4],[5,6],[6,7],[1,8],[8,9],[9,10],[1,11],[11,12],[12,13],[0,14],[0,15],[14,16],[15,17]]
-
-elif MODE is "MPI" :
-    protoFile = "pose/mpi/pose_deploy_linevec_faster_4_stages.prototxt"
-    weightsFile = "pose/mpi/pose_iter_160000.caffemodel"
-    nPoints = 15
-    POSE_PAIRS = [[0,1], [1,2], [2,3], [3,4], [1,5], [5,6], [6,7], [1,14], [14,8], [8,9], [9,10], [14,11], [11,12], [12,13] ]
+from azure.cognitiveservices.vision.computervision import ComputerVisionClient
+from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
+from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
+from msrest.authentication import CognitiveServicesCredentials
 
 
-inWidth = 368
-inHeight = 368
-threshold = 0.1
+def isSugg():
+    cap = cv2.VideoCapture('body.mp4')
+
+    while True:
+        ret, frame = cap.read()
+        cv2.imwrite("b1.jpg", frame)
+
+        subscription_key = "49476384fc2548968bfc09ab465229ca"
+        endpoint = "https://seungjoolee.cognitiveservices.azure.com/"
 
 
-input_source = "output-roy.avi"
-cap = cv2.VideoCapture(input_source)
-hasFrame, frame = cap.read()
+        print("===== Detect objects =====")
+        analyze_url = endpoint + "vision/v3.1/analyze"
+        image_data = open("b1.jpg", "rb").read()
+        headers = {'Ocp-Apim-Subscription-Key': subscription_key,
+            'Content-Type': 'application/octet-stream'}
+        params = {'visualFeatures': 'objects'}
+        response = requests.post(
+            analyze_url, headers=headers, params=params, data=image_data)
+        response.raise_for_status()
+        analysis = response.json()
+        #print(analysis.get('objects'))
+        #li = []
+    # draw = ImageDraw.Draw(image_data)
 
-vid_writer = cv2.VideoWriter('output.avi',cv2.VideoWriter_fourcc('M','J','P','G'), 10, (frame.shape[1],frame.shape[0]))
+        objects = analysis['objects']
+        for obj in objects:
+            if obj['object'] == 'person':
+                rect = obj['rectangle']
+                x = rect['x']
+                y = rect['y']
+                w = rect['w']
+                h = rect['h']
 
-net = cv2.dnn.readNetFromCaffe(protoFile, weightsFile)
+                #cv2.imwrite("ad1.jpg", frame[y:y+h, x:x+w])
+                ad, ra = test3.adult(frame[y:y+h, x:x+w])
+                if(ad == True or ra == True):
+                    face_region = frame[y:y+h, x:x+w]
+                    M = face_region.shape[0]
+                    N = face_region.shape[1]
+                    face_region = cv2.resize(face_region, None, fx=0.05, fy=0.05, interpolation=cv2.INTER_AREA)
+                    frame[y:y+h, x:x+w] = face_region
 
-while cv2.waitKey(1) < 0:
-    t = time.time()
-    hasFrame, frame = cap.read()
-    frameCopy = np.copy(frame)
-    if not hasFrame:
-        cv2.waitKey()
-        break
+                #image_data = np.frombuffer(image_data, dtype=np.float64)
 
-    frameWidth = frame.shape[1]
-    frameHeight = frame.shape[0]
+                
+        os.remove("b1.jpg")
+            #draw.rectangle(((x,y), (x+w, y+h)), outline='yellow')
 
-    inpBlob = cv2.dnn.blobFromImage(frame, 1.0 / 255, (inWidth, inHeight),
-                              (0, 0, 0), swapRB=False, crop=False)
-    net.setInput(inpBlob)
-    output = net.forward()
+        cv2.imshow("body", frame)
+        if cv2.waitKey(1)==27:
+            break
 
-    H = output.shape[2]
-    W = output.shape[3]
-    # Empty list to store the detected keypoints
-    points = []
+    cap.release()
+    cv2.destroyAllWindows()
+        #cv2.rectangle(image_data, (x,y), (x+h, y+h), (0, 0, 255), 2)
 
-    for i in range(nPoints):
-        # confidence map of corresponding body's part.
-        probMap = output[0, i, :, :]
-
-        # Find global maxima of the probMap.
-        minVal, prob, minLoc, point = cv2.minMaxLoc(probMap)
-        
-        # Scale the point to fit on the original image
-        x = (frameWidth * point[0]) / W
-        y = (frameHeight * point[1]) / H
-
-        if prob > threshold : 
-            cv2.circle(frameCopy, (int(x), int(y)), 8, (0, 255, 255), thickness=-1, lineType=cv2.FILLED)
-            cv2.putText(frameCopy, "{}".format(i), (int(x), int(y)), cv2.FONT_HERSHEY_SIMPLEX, 1, (0, 0, 255), 2, lineType=cv2.LINE_AA)
-
-            # Add the point to the list if the probability is greater than the threshold
-            points.append((int(x), int(y)))
-        else :
-            points.append(None)
-
-    # Draw Skeleton
-    for pair in POSE_PAIRS:
-        partA = pair[0]
-        partB = pair[1]
-
-        if points[partA] and points[partB]:
-            cv2.line(frame, points[partA], points[partB], (0, 255, 255), 3, lineType=cv2.LINE_AA)
-            cv2.circle(frame, points[partA], 8, (0, 0, 255), thickness=-1, lineType=cv2.FILLED)
-            cv2.circle(frame, points[partB], 8, (0, 0, 255), thickness=-1, lineType=cv2.FILLED)
-
-    cv2.putText(frame, "time taken = {:.2f} sec".format(time.time() - t), (50, 50), cv2.FONT_HERSHEY_COMPLEX, .8, (255, 50, 0), 2, lineType=cv2.LINE_AA)
-    # cv2.putText(frame, "OpenPose using OpenCV", (50, 50), cv2.FONT_HERSHEY_COMPLEX, 1, (255, 50, 0), 2, lineType=cv2.LINE_AA)
-    # cv2.imshow('Output-Keypoints', frameCopy)
-    cv2.imshow('Output-Skeleton', frame)
-
-    vid_writer.write(frame)
-    if cv2.waitKey(10) == 27:
-        break
-
-cv2.destroyAllWindows()
+isSugg()
+""" x=0
+    y=0
+    w=0
+    h=0
+    for i in range(len(analysis.get('objects'))):
+        if analysis.get('objects')[i].get('object') == 'person':
+            li.append(analysis.get('objects')[i].get('rectangle'))
+            for name, positon in li[i]:
+                if name == "x":
+                    x = li[name]
+                elif name == "y":
+                    y =li[name]
+                elif name == "w":
+                    y =li[name]
+                elif name == "h":
+                    y =li[name]
+            roi = image_data[y:y+h, x:x+w]
+            cv2.imwrite("n" + str(i) + ".png", roi)
+            
+    return li"""

@@ -21,6 +21,7 @@ while True:
     upper = upper_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
     frame = imutils.resize(frame, width=1000, height=1000)
 
+    print(type(frame))
 
     if not ret:
         break

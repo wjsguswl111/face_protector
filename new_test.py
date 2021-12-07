@@ -6,7 +6,7 @@ from pymysql import connect
 import imgDB
 import deleteFile
 import pymysql
-from os import listdird
+from os import listdir
 from os.path import isfile, join
 import os
 import imageio
@@ -44,7 +44,7 @@ while True:
 
     if type(frame) == type(None):
         break
-
+    
     frame = imutils.resize(frame, width=400)
     (h, w) = frame.shape[:2]
 
