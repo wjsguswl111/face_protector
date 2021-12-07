@@ -6,7 +6,7 @@ from pymysql import connect
 import imgDB
 import deleteFile
 import pymysql
-from os import listdir
+from os import listdird
 from os.path import isfile, join
 import os
 import imageio
