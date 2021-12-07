@@ -17,10 +17,13 @@ while True:
     grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
     faces = face_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
 <<<<<<< HEAD
+<<<<<<< HEAD
     lower = lower_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
     upper = upper_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
     #frame = imutils.resize(frame, width=600, height=600)
 =======
+=======
+>>>>>>> e26ae08cecfedbb54202c8b448264031283648da
     lower = lower_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
     upper = upper_cascade.detectMultiScale(grayframe, 1.8, 2, 0, (30, 30))
     frame = imutils.resize(frame, width=1000, height=1000)
@@ -60,8 +63,11 @@ while True:
         frame[y:y+h,x:x+w] = body_img
 
 <<<<<<< HEAD
+<<<<<<< HEAD
     cv2.imshow("Body", frame)
 =======
+=======
+>>>>>>> e26ae08cecfedbb54202c8b448264031283648da
     cv2.imshow("Detect", frame)
 >>>>>>> main
     if cv2.waitKey(10) == 27:

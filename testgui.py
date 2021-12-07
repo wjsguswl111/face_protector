@@ -1,7 +1,18 @@
 import sys
 import datetime
 import cv2
-import test_body
+#import test_body
+import numpy as np
+import imutils
+from PIL import ImageGrab, Image
+from pymysql import connect
+import imgDB
+import deleteFile
+import pymysql
+from os import listdir
+from os.path import isfile, join
+import os
+import imageio
 from PyQt5.QtWidgets import (QListWidget, QRadioButton, QSlider, QCheckBox, QGroupBox, QHBoxLayout, QMainWindow, qApp, QWidget, QPushButton, QApplication, QAction, QLabel, QFileDialog, QStyle, QVBoxLayout)
 from PyQt5.QtGui import QPainter, QIcon, QPalette, QImage
 from PyQt5.QtCore import QThread, QDir, QObject, QTimer, QEventLoop, Qt, QUrl, pyqtSignal
@@ -10,7 +21,6 @@ from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 
 class CWidget(QMainWindow):
-    
     state_signal = pyqtSignal(str)
     duration_signal = pyqtSignal(int)
     position_signal = pyqtSignal(int)
@@ -65,8 +75,9 @@ class CWidget(QMainWindow):
         
         groupBox = QGroupBox("모자이크 선택")
         self.check_face = QCheckBox("Face")
+        self.check_face.clicked.connect(self.face_detection)
         self.check_body = QCheckBox("Body")
-        self.check_body.clicked.connect(self.body_blur)
+        #self.check_body.clicked.connect(self.body_blur)
         self.check_improper = QCheckBox("Improper")
         self.star_btn = QPushButton("즐겨찾기", self)
         self.star_btn.setEnabled(False)
@@ -208,68 +219,142 @@ class CWidget(QMainWindow):
             self.label3.setText(msg)
         self.state_signal.emit(msg)
 
-    def body_blur(self):
-        '''cap = cv2.VideoCapture(str(filename))
-        font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
+    def face_detection(self):
+        protoPath = "deploy.prototxt"
+        modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
+        detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-        fps = 20
-        width = int(cap.get(3))
-        height = int(cap.get(4))
-        fcc = cv2.VideoWriter_fourcc('D', 'I', 'V', 'X')
+        video = cv2.VideoCapture(filename)
+        
+        width = int(cv2.CAP_PROP_FRAME_WIDTH)
+        height = int(cv2.CAP_PROP_FRAME_HEIGHT)
+        fourcc = cv2.VideoWriter_fourcc(*'mp4v')
+        out = cv2.VideoWriter(filesave, fourcc, 20.0, (height, width))
 
-        out = cv2.VideoWriter(str(filesave), fcc, fps, (width, height))
+        name = 1
 
-        hog=cv2.HOGDescriptor()
-        hog.setSVMDetector(cv2.HOGDescriptor_getDefaultPeopleDetector())
+        imgDB.creTable2()
 
-        face_cascade = cv2.CascadeClassifier('haarcascade_fullbody.xml')
-        lower_cascade = cv2.CascadeClassifier('haarcascade_lowerbody.xml')
-        upper_cascade = cv2.CascadeClassifier('haarcascade_upperbody.xml')
+        def train():
+            path = os.getcwd() + "\image\\"
+            onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
+            Training_Data, Labels = [], []
+            for i, files in enumerate(onlyfiles):
+                image_path = path + onlyfiles[i]
+                images = cv2.imread(image_path, cv2.IMREAD_GRAYSCALE)
+                if images is None:
+                    continue
+                Training_Data.append(np.asarray(images, dtype=np.uint8))
+                Labels.append(i)
+            if len(Labels)==0:
+                return None   
+            Labels = np.asarray(Labels, dtype=np.int32)
+            model = cv2.face.LBPHFaceRecognizer_create()
+            model.train(np.asarray(Training_Data), np.asarray(Labels))
+            return model
+        
 
         while True:
-            ret, frame = cap.read()
-            grayframe = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
-            faces = face_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
-            lower = lower_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
-            upper = upper_cascade.detectMultiScale(grayframe, 1.1, 2, 0, (20, 20))
 
-            if not ret:
+            img, frame = video.read()
+
+            if type(frame) == type(None):
                 break
-    
-            detected, _=hog.detectMultiScale(frame)
 
-            for(x, y, w, h) in detected:
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
+            #frame = imutils.resize(frame, width=400)
+            (h, w) = frame.shape[:2]
 
-            for(x, y, w, h) in faces:
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
+            imageBlob = cv2.dnn.blobFromImage(frame, 1.0, (300, 300), (104.0, 177.0, 123.0))
+            
+            detector.setInput(imageBlob)
+            detections = detector.forward()
 
-            for(x, y, w, h) in upper:
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
+            for i in range(0, detections.shape[2]):
+                confidence = detections[0, 0, i, 2]
 
-            for(x, y, w, h) in lower:
-                body_img=frame[y:y+h,x:x+w]
-                body_img=cv2.resize(body_img, dsize=(0, 0),fx=0.04,fy=0.04)
-                body_img=cv2.resize(body_img, (w, h), interpolation=cv2.INTER_AREA)
-                frame[y:y+h,x:x+w] = body_img
+                if confidence > 0.5 :
+                    box = detections[0, 0, i, 3:7] * np.array([w, h, w, h])
+                    (startX, startY, endX, endY) = box.astype("int")
 
-            cv2.imshow("Body", frame)
+                    (startX, startY) = (max(0, startX), max(0, startY))
+                    (endX, endY) = (min(w-1, endX), min(h-1, endY))
+                    cv2.rectangle(frame, (startX, startY), (endX, endY), (0, 0, 255), 2)
+                    
+                    gray = cv2.cvtColor(frame, cv2.COLOR_BGR2GRAY)
+                    roi = frame[startY:endY, startX:endX]
+                    #roi = cv2.resize(roi, (200, 200))
+
+                    min_score=999
+                    min_score_name=""
+                    roi = cv2.cvtColor(roi, cv2.COLOR_BGR2GRAY)
+                    
+                    model = cv2.face.LBPHFaceRecognizer_create()
+
+                    models = imgDB.callResult()
+
+                    if not models:
+                        imgDB.creTable(("n" + str(name)))
+                        imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
+                        imgDB.imgFromDB(("n" + str(name)))
+                        train().write("samples\\"+('n'+str(name))+".yml")
+                        imgDB.saveResult(("n" + str(name)), os.getcwd() + "\samples\\" + ('n'+str(name)) + ".yml")
+                        deleteFile.delImg("1")
+                        name = name+1
+                    
+                    else:
+                        for key, paths in models.items():
+                            model.read(paths)
+                            result = model.predict(roi)
+                            if min_score>result[1]:
+                                min_score = result[1]
+                                min_score_name = key
+                        
+                        if min_score<500:
+                            confidence = int(100*(1-(min_score)/300))
+                        print(confidence)
+                        if confidence>70:
+                            imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
+
+                        else:
+                            for key, path in models.items():
+                                os.remove("samples\\"+str(key)+".yml")
+                                imgDB.imgFromDB(str(key))
+                                train().write("samples\\"+str(key)+".yml")
+                                jpgpath = os.getcwd() + "\image\\"
+                                for file in os.listdir(jpgpath):
+                                    deleteFile.delImg(file.split(".")[0])
+
+                            models = imgDB.callResult()
+                            for key, paths in models.items():
+                                model.read(paths)
+                                id, result = model.predict(roi)
+                                if min_score>result:
+                                    min_score = result
+                                    min_score_name = key
+                            
+                            if min_score<500:
+                                confidence = int(100*(1-(min_score)/300))
+                            if confidence>70:
+                                imgDB.imgToDB(str(min_score_name), frame[startY:endY, startX:endX])
+
+                            else:
+                                imgDB.creTable(("n" + str(name)))
+                                imgDB.imgToDB(("n" + str(name)), frame[startY:endY, startX:endX])
+                                imgDB.imgFromDB(("n" + str(name)))
+                                train().write("samples\\"+('n'+str(name))+".yml")
+                                imgDB.saveResult(("n" + str(name)), os.getcwd() + "\samples\\" + ('n'+str(name)) + ".yml")
+                                deleteFile.delImg("1")
+                                name = name+1
+            
+            
+            cv2.imshow('Face',frame)
             out.write(frame)
-            if cv2.waitKey(10) == 27:
+            if cv2.waitKey(1)==27:
                 break
-        cap.release()
+
+        video.release()
         out.release()
-        cv2.destroyAllWindows()'''
-        test_body.blur()
+        cv2.destroyAllWindows()
 
     '''def face(self):
     def improper(self):

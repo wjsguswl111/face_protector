@@ -7,7 +7,7 @@ import imutils
 import testgui
  
 def blur(): 
-    cap = cv2.VideoCapture(str(testgui.filename))
+    cap = cv2.VideoCapture('two_person.mp4')
     font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
 
     fps = 20
