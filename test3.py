@@ -14,18 +14,18 @@ from azure.cognitiveservices.vision.computervision.models import VisualFeatureTy
 from msrest.authentication import CognitiveServicesCredentials
 
 
-def adult(frame):
+def adult(frame, name):
     subscription_key = "49476384fc2548968bfc09ab465229ca"
     endpoint = "https://seungjoolee.cognitiveservices.azure.com/"
 
     computervision_client = ComputerVisionClient(endpoint, CognitiveServicesCredentials(subscription_key))
 
-    cv2.imwrite('ad.jpg', frame)
+    cv2.imwrite('ad' + str(name) + '.jpg', frame)
     print("===== Detect Adult or Racy Content - remote =====")
     remote_image_features = ["adult"]
 
     analyze_url = endpoint + "vision/v3.1/analyze"
-    image_data = open("ad.jpg", "rb").read()
+    image_data = open('ad'+str(name) + '.jpg', "rb").read()
     headers = {'Ocp-Apim-Subscription-Key': subscription_key,
            'Content-Type': 'application/octet-stream'}
     params = {'visualFeatures': 'adult'}
@@ -37,5 +37,5 @@ def adult(frame):
     isRacy = analysis['adult']['isRacyContent']
     print("isAdult: " + str(isAdult))
     print("isRacy: " + str(isRacy))
-    os.remove('ad.jpg')
+    os.remove('ad' + str(name) + '.jpg')
     return isAdult, isRacy
