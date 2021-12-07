@@ -10,7 +10,6 @@ from PyQt5.QtMultimedia import QMediaContent, QMediaPlayer
 from PyQt5.QtMultimediaWidgets import QVideoWidget
 
 class CWidget(QMainWindow):
-    
     state_signal = pyqtSignal(str)
     duration_signal = pyqtSignal(int)
     position_signal = pyqtSignal(int)
