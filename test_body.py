@@ -4,11 +4,9 @@ import imutils
 #from PyQt5.QtMultimedia import QMediaPlaylist, QMediaPlayer, QMediaContent
 #from PyQt5.QtCore import QUrl, QObject, pyqtSignal
 #from testgui import CWidget
-
-
+import testgui
  
 def blur(): 
-    import testgui
     cap = cv2.VideoCapture(str(testgui.filename))
     font = cv2.FONT_HERSHEY_SIMPLEX #사람 감지 글씨체 정의
 
