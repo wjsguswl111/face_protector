@@ -95,26 +95,3 @@ def isSugg():
 
     cap.release()
     cv2.destroyAllWindows()
-        #cv2.rectangle(image_data, (x,y), (x+h, y+h), (0, 0, 255), 2)
-
-isSugg()
-""" x=0
-    y=0
-    w=0
-    h=0
-    for i in range(len(analysis.get('objects'))):
-        if analysis.get('objects')[i].get('object') == 'person':
-            li.append(analysis.get('objects')[i].get('rectangle'))
-            for name, positon in li[i]:
-                if name == "x":
-                    x = li[name]
-                elif name == "y":
-                    y =li[name]
-                elif name == "w":
-                    y =li[name]
-                elif name == "h":
-                    y =li[name]
-            roi = image_data[y:y+h, x:x+w]
-            cv2.imwrite("n" + str(i) + ".png", roi)
-            
-    return li"""
