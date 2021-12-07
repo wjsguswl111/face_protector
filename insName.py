@@ -6,6 +6,7 @@ from numpy.lib import polynomial
 import imgDB
 import imageio
 import os
+import deleteFile
    
 class Main(QDialog):
     def __init__(self):
@@ -74,6 +75,7 @@ class Main(QDialog):
             for x in range(len(self.line)):
                 imgDB.rename(self.tname[x],self.text[x])
                 imgDB.reStar(self.tname[x],self.text[x])
+                deleteFile.renameYml(self.tname[x],self.text[x])
     
                 
 

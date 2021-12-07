@@ -62,6 +62,45 @@ def callResult():
         connection.commit()
         connection.close()
 
+#값만 불러오기
+def callResult2(name):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT result FROM members WHERE memName =(%s)",(name))
+        res = cursor.fetchall()
+        res = list(res)
+        res = str(res[0])
+        characters = "(),"
+        for c in range(len(characters)):
+            res = res.replace(characters[c],"")
+        return res
+
+    finally:
+        connection.commit()
+        connection.close()
+        
+
+#요소지우기
+def delMember(name):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM members WHERE memName =(%s)",(name))
+
+    finally:
+        connection.commit()
+        connection.close()
 '''
 def upResult(mem,re):
     connection = pymysql.connect(
@@ -235,7 +274,7 @@ def creStarTable():
             )
     try:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS stars (memName VARCHAR(255))")
+        cursor.execute("CREATE TABLE IF NOT EXISTS stars (memName VARCHAR(255), result VARCHAR(255))")
         cursor.execute("ALTER TABLE stars ADD UNIQUE INDEX (memName)")
 
     finally:
@@ -243,7 +282,7 @@ def creStarTable():
         connection.close()
 
 
-def intoStar(star):
+def intoStar(star,result):
     connection = pymysql.connect(
                     host = '127.0.0.1',
                     database = 'chosun',
@@ -252,8 +291,8 @@ def intoStar(star):
             )
     try:
         cursor = connection.cursor()
-        sql = "INSERT IGNORE INTO stars (memName) VALUES (%s)"
-        val = (star)
+        sql = "INSERT IGNORE INTO stars (memName, result) VALUES (%s,%s)"
+        val = (star,result)
         cursor.execute(sql,val)
 
     finally:
@@ -312,12 +351,28 @@ def reStar(old,new):
     try:
         cursor = connection.cursor()
         cursor.execute("UPDATE stars SET memName = %s WHERE memName = %s",(new,old))
+        ####경로이름바꾸기##################################################
 
     finally:
         connection.commit()
         connection.close()
-    
+
+#멤버비우는 함수
+def cleanMember():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("TRUNCATE members")
+
+    finally:
+        connection.commit()
+        connection.close()
  #모자이크 다 끝나고 members 다 비우기
  #즐겨찾기ㅣ 할사람빼고 파일 다지우기yml
- #stars에 경로 저장할 곳 추가
+ #stars에 경로 저장할 곳 추가 ##
  #yml 파일 라내암

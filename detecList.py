@@ -6,6 +6,7 @@ from numpy.lib import polynomial
 import imgDB
 import imageio
 import os
+import deleteFile
    
 class Main(QDialog):
     def __init__(self):
@@ -73,7 +74,7 @@ class Main(QDialog):
     
     def clickedBTN(self):
         for x in range(len(self.checking)):
-            imgDB.intoStar(self.checking[x])
+            imgDB.intoStar(self.checking[x],imgDB.callResult2(self.checking[x]))
         btnReply = QMessageBox.information(self, "message", str(self.checking),QMessageBox.Yes)
         li = imgDB.showTable()
         lili = [];
@@ -88,6 +89,8 @@ class Main(QDialog):
                     continue
                 else:
                     imgDB.delTable(li[x])
+                    imgDB.delMember(li[x])
+                    deleteFile.delYml(li[x])
             
                 
         
