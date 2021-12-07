@@ -28,11 +28,15 @@ class Main(QDialog):
 
     def create_tab_1(self):
         formlayout = QFormLayout()
-        self.btn = QPushButton('체크제외 모자이크', self);
-        formlayout.addRow(self.btn)
-        self.btn.clicked.connect(self.clickedBTN)
+        self.btn1 = QPushButton('체크제외 모자이크', self);
+        formlayout.addRow(self.btn1)
+        self.btn1.clicked.connect(self.clickedBTN1)
+        
+        self.btn2 = QPushButton('추가로 모자이크 제외할 사람이 있습니다.', self);
+        formlayout.addRow(self.btn2)
+        self.btn2.clicked.connect(self.clickedBTN2)
 
-        li = imgDB.showTable()
+        li = imgDB.fromStar()
         self.chk = []
         self.tname = []
         timg = []
@@ -70,11 +74,15 @@ class Main(QDialog):
                 self.checking.append(self.tname[x])
         print(self.checking)
     
-    def clickedBTN(self):
+    
+    def clickedBTN1(self):
         for x in range(len(self.checking)):
             imgDB.intoStar(self.checking[x])
         QMessageBox.about(self, "message", str(self.checking))
-        
+    
+    def clickedBTN2(self):
+        print("동영상 검출 돌림")
+                
 
 if __name__ == '__main__':
     imgDB.creStarTable()
