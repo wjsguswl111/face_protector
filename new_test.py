@@ -13,7 +13,7 @@ import imageio
 import detecList
 from PyQt5.QtCore import QCoreApplication
 import bookmark
-
+import GUI
 def train():
     path = os.getcwd() +  "\image\\"
     onlyfiles = [f for f in listdir(path) if isfile(join(path, f))]
@@ -33,11 +33,12 @@ def train():
     return model
 
 def faceDtec():
-    protoPath = "deploy.prototxt"
-    modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
+    path = os.getcwd()
+    protoPath = path+"/deploy.prototxt"
+    modelPath = path+"/res10_300x300_ssd_iter_140000.caffemodel"
     detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-    video = cv2.VideoCapture("ssam3.mp4")
+    video = cv2.VideoCapture(GUI.filename)
 
     name = 1
 

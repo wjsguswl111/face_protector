@@ -9,7 +9,7 @@ from os import listdir
 from os.path import isfile, join
 import os
 import imageio
-
+import GUI
 
 
 def train():
@@ -35,7 +35,7 @@ def classify():
     modelPath = "res10_300x300_ssd_iter_140000.caffemodel"
     detector = cv2.dnn.readNetFromCaffe(protoPath, modelPath)
 
-    video = cv2.VideoCapture("ssam3.mp4")
+    video = cv2.VideoCapture(GUI.filename)
     while True:
         img, frame = video.read()
 

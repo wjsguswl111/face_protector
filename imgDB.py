@@ -275,23 +275,15 @@ def creStarTable():
             )
     try:
         cursor = connection.cursor()
-<<<<<<< HEAD
         cursor.execute("CREATE TABLE IF NOT EXISTS stars (memName VARCHAR(255), result VARCHAR(255))")
         cursor.execute("ALTER TABLE stars ADD UNIQUE INDEX (memName)")
-=======
-        cursor.execute("CREATE TABLE IF NOT EXISTS stars (memName VARCHAR(255))")
->>>>>>> acce08618970f89945d834a7ceee3f9a57ac8bc1
 
     finally:
         connection.commit()
         connection.close()
 
-<<<<<<< HEAD
 
 def intoStar(star,result):
-=======
-def intoStar(star):
->>>>>>> acce08618970f89945d834a7ceee3f9a57ac8bc1
     connection = pymysql.connect(
                     host = '127.0.0.1',
                     database = 'chosun',
@@ -300,19 +292,13 @@ def intoStar(star):
             )
     try:
         cursor = connection.cursor()
-<<<<<<< HEAD
         sql = "INSERT IGNORE INTO stars (memName, result) VALUES (%s,%s)"
         val = (star,result)
-=======
-        sql = "INSERT INTO stars (memName) VALUES (%s)"
-        val = (star)
->>>>>>> acce08618970f89945d834a7ceee3f9a57ac8bc1
         cursor.execute(sql,val)
 
     finally:
         connection.commit()
         connection.close()
-<<<<<<< HEAD
 
 #즐겨찾기로부터 이름 가져오는것
 def fromStar():
@@ -421,5 +407,3 @@ def auto():
  #즐겨찾기ㅣ 할사람빼고 파일 다지우기yml
  #stars에 경로 저장할 곳 추가 ##
  #yml 파일 라내암
-=======
->>>>>>> acce08618970f89945d834a7ceee3f9a57ac8bc1

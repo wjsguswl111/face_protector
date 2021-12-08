@@ -96,8 +96,8 @@ class Main1(QDialog):
         win.showModal()
         #imgDB.auto()
     
-    def show(self):
-        super().show()
+    def showModal3(self):
+        return super().exec_()
         
 
 # if __name__ == '__main__':
