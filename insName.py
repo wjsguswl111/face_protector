@@ -6,8 +6,9 @@ from numpy.lib import polynomial
 import imgDB
 import imageio
 import os
+import deleteFile
    
-class Main(QDialog):
+class Main3(QDialog):
     def __init__(self):
         super().__init__()
         self.init_ui()
@@ -74,11 +75,14 @@ class Main(QDialog):
             for x in range(len(self.line)):
                 imgDB.rename(self.tname[x],self.text[x])
                 imgDB.reStar(self.tname[x],self.text[x])
+                re = deleteFile.renameYml(self.tname[x],self.text[x])
+                imgDB.reMem(self.tname[x],re,self.text[x])
     
-                
+    def showModal2(self):
+        return super().exec_()
 
-if __name__ == '__main__':
-    imgDB.creStarTable()
-    app = QApplication(sys.argv)
-    main = Main()
-    sys.exit(app.exec_())
+# if __name__ == '__main__':
+#     imgDB.creStarTable()
+#     app = QApplication(sys.argv)
+#     main = Main()
+#     sys.exit(app.exec_())

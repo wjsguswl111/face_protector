@@ -6,3 +6,20 @@ def delImg(imgName):
     file = path + "\image\\" + imgName + ".jpeg" #여기 수정필요
     if os.path.isfile(file):
         os.remove(file)
+
+########################
+def delYml(imgName):
+    path = os.getcwd()
+    file = path + "\samples\\" + imgName + ".yml" #여기 수정필요
+
+    if os.path.isfile(file):
+        os.remove(file)
+
+
+#############파일이름바꾸기
+def renameYml(old,new):
+    path = os.getcwd()
+    file = path+"\samples\\"+old+".yml"
+    nfile = file.replace(old,new)
+    os.renames(file,nfile)
+    return nfile

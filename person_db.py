@@ -10,7 +10,7 @@ import io
 import numpy as np
 import test3
 import imutils
-
+import GUI
 from azure.cognitiveservices.vision.computervision import ComputerVisionClient
 from azure.cognitiveservices.vision.computervision.models import OperationStatusCodes
 from azure.cognitiveservices.vision.computervision.models import VisualFeatureTypes
@@ -18,19 +18,20 @@ from msrest.authentication import CognitiveServicesCredentials
 
 def isSugg():
     cnt=0
-    cap = cv2.VideoCapture('body.mp4')
-    wid = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
-    hei = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
-    fourcc = cv2.VideoWriter_fourcc(*'DIVX')
-    out = cv2.VideoWirter('output.avi',fourcc,30.0,(int(wid), int(hei)))
+    cap = cv2.VideoCapture(GUI.filename)
     x=1
     y=1
     w=1
     h=1
+    wid = cap.get(cv2.CAP_PROP_FRAME_WIDTH)
+    hei = cap.get(cv2.CAP_PROP_FRAME_HEIGHT)
+    fourcc = cv2.VideoWriter_fourcc('D','I','V','X')
+    out = cv2.VideoWriter(GUI.filesave, fourcc, 30.0, (int(wid), int(hei)))
+    
 
     while True:
         ret, frame = cap.read()
-        frame = imutils.resize(frame, width=600)
+        #frame = imutils.resize(frame, width=600)
 
         if(cnt % 30 == 0):
             cnt=0
@@ -101,3 +102,5 @@ def isSugg():
     cap.release()
     out.release()
     cv2.destroyAllWindows()
+
+isSugg()

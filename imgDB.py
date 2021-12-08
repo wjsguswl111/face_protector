@@ -62,6 +62,63 @@ def callResult():
         connection.commit()
         connection.close()
 
+#값만 불러오기
+def callResult2(name):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT result FROM members WHERE memName =(%s)",(name))
+        res = cursor.fetchall()
+        res = list(res)
+        res = str(res[0])
+        characters = "(),"
+        for c in range(len(characters)):
+            res = res.replace(characters[c],"")
+        return res
+
+    finally:
+        connection.commit()
+        connection.close()
+        
+
+#요소지우기
+def delMember(name):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("DELETE FROM members WHERE memName =(%s)",(name))
+
+    finally:
+        connection.commit()
+        connection.close()
+'''
+def upResult(mem,re):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("UPDATE members SET result = %s WHERE memName = %s",(re, mem))
+        res = cursor.fetchall()
+
+    finally:
+        connection.commit()
+        connection.close()
+'''
+
 def creTable(tableName):
     connection = pymysql.connect(
                     host = '127.0.0.1',
@@ -218,13 +275,15 @@ def creStarTable():
             )
     try:
         cursor = connection.cursor()
-        cursor.execute("CREATE TABLE IF NOT EXISTS stars (memName VARCHAR(255))")
+        cursor.execute("CREATE TABLE IF NOT EXISTS stars (memName VARCHAR(255), result VARCHAR(255))")
+        cursor.execute("ALTER TABLE stars ADD UNIQUE INDEX (memName)")
 
     finally:
         connection.commit()
         connection.close()
 
-def intoStar(star):
+
+def intoStar(star,result):
     connection = pymysql.connect(
                     host = '127.0.0.1',
                     database = 'chosun',
@@ -233,10 +292,118 @@ def intoStar(star):
             )
     try:
         cursor = connection.cursor()
-        sql = "INSERT INTO stars (memName) VALUES (%s)"
-        val = (star)
+        sql = "INSERT IGNORE INTO stars (memName, result) VALUES (%s,%s)"
+        val = (star,result)
         cursor.execute(sql,val)
 
     finally:
         connection.commit()
         connection.close()
+
+#즐겨찾기로부터 이름 가져오는것
+def fromStar():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("SELECT memName FROM stars")
+        res = cursor.fetchall()
+
+        li = []
+        for x in res:
+            characters = "(),'"
+            for c in range(len(characters)):
+                x =str(x).replace(characters[c],"")
+            li.append(x)
+        return li
+
+    finally:
+        connection.commit()
+        connection.close()
+
+#테이블 이름 바꾸기
+def rename(old,new):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("ALTER TABLE "+old+" RENAME "+new)
+
+    finally:
+        connection.commit()
+        connection.close()
+
+#스타테이블에 저장된 이름 바꾸기
+def reStar(old,new):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("UPDATE stars SET memName = %s WHERE memName = %s",(new,old))
+        ####경로이름바꾸기##################################################
+
+    finally:
+        connection.commit()
+        connection.close()
+
+#멤버비우는 함수
+def cleanMember():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("TRUNCATE members")
+
+    finally:
+        connection.commit()
+        connection.close()
+
+def reMem(old,file,new):
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        cursor = connection.cursor()
+        cursor.execute("UPDATE members SET memName = %s, result=%s WHERE memName = %s",(new,file,old))
+        ####경로이름바꾸기##################################################
+
+    finally:
+        connection.commit()
+        connection.close()
+  
+def auto():
+    connection = pymysql.connect(
+                    host = '127.0.0.1',
+                    database = 'chosun',
+                    user = 'root',
+                    password = 'a5214645'
+            )
+    try:
+        connection.autocommit(True)
+
+    finally:
+        connection.commit()
+        connection.close()
+ #모자이크 다 끝나고 members 다 비우기
+ #즐겨찾기ㅣ 할사람빼고 파일 다지우기yml
+ #stars에 경로 저장할 곳 추가 ##
+ #yml 파일 라내암

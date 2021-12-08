@@ -1,4 +1,5 @@
 import sys
+from PyQt5 import QtWidgets
 from PyQt5.QtGui import QPixmap
 from PyQt5.QtWidgets import *
 from PyQt5.QtCore import Qt
@@ -6,8 +7,12 @@ from numpy.lib import polynomial
 import imgDB
 import imageio
 import os
-   
-class Main(QDialog):
+import new_test
+import deleteFile
+import face_classifier
+import detecList
+
+class Main1(QDialog):
     def __init__(self):
         super().__init__()
         self.init_ui()
@@ -76,16 +81,28 @@ class Main(QDialog):
     
     
     def clickedBTN1(self):
+        path = os.getcwd()
+        
         for x in range(len(self.checking)):
-            imgDB.intoStar(self.checking[x])
-        QMessageBox.about(self, "message", str(self.checking))
+            file = path+"\samples\\"+self.checking[x]+".yml"
+            imgDB.saveResult(self.checking[x],file)
+        face_classifier.classify()
+        
     
     def clickedBTN2(self):
         print("동영상 검출 돌림")
-                
+        new_test.faceDtec()
+        win = detecList.Main2()
+        win.showModal()
+        #imgDB.auto()
+    
+    def showModal3(self):
+        return super().exec_()
+        
 
-if __name__ == '__main__':
-    imgDB.creStarTable()
-    app = QApplication(sys.argv)
-    main = Main()
-    sys.exit(app.exec_())
+# if __name__ == '__main__':
+#     imgDB.creStarTable()
+#     app = QApplication(sys.argv)
+#     main = Main1()
+    
+#     sys.exit(app.exec_())
