@@ -37,5 +37,6 @@ def adult(frame, name):
     isRacy = analysis['adult']['isRacyContent']
     print("isAdult: " + str(isAdult))
     print("isRacy: " + str(isRacy))
+    print(" ")
     os.remove('ad' + str(name) + '.jpg')
     return isAdult, isRacy
